@@ -20,8 +20,6 @@ builder.Services.AddSwaggerGen();
 
 
 
-
-builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<ILogin, LoginRepository>();
 
 
@@ -37,7 +35,8 @@ ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 // Dapper + EF Core
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddDbContext<ProBankCoreMVCDBContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("myTestDB")));
+options.UseSqlServer(builder.Configuration.GetConnectionString("connString")));
+
 
 var app = builder.Build();
 

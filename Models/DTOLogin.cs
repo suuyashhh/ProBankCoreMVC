@@ -8,7 +8,7 @@ namespace Models
 {
     public class DTOLogin
     {
-        public string MobileNo { get; set; }
-        public string Code { get; set; }
+        public string INI { get; set; }
+        public string CODE { get; set; }
     }
 }

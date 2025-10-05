@@ -14,15 +14,24 @@ namespace ProBankCoreMVC.Repositries
             _context = context;
         }
 
-        public async Task<bool> ValidateUserAsync(string mobileNo, string code)
+        public async Task<bool> ValidateUserAsync(string ini, string code)
         {
-            var sql = "SELECT COUNT(1) FROM UserMast WHERE MobileNo = @MobileNo AND Code = @Code";
+            var sql = "SELECT COUNT(1) FROM UserMast WHERE ini = @INI AND code = @CODE";
 
-            using (var connection = _context.CreateConnection())
+            try
             {
-                var count = await connection.ExecuteScalarAsync<int>(sql, new { MobileNo = mobileNo, Code = code });
-                return count > 0;
+                using (var connection = _context.CreateConnection())
+                {
+                    var count = await connection.ExecuteScalarAsync<int>(sql, new { INI = ini, CODE = code });
+                    return count > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SQL Error in ValidateUserAsync: {ex.Message}");
+                throw;
             }
         }
+
     }
 }

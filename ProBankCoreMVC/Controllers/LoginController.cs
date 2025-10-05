@@ -18,10 +18,10 @@ namespace ProBankCoreMVC.Controllers
         [HttpPost("validate")]
         public async Task<IActionResult> Validate([FromBody] DTOLogin login)
         {
-            if (login == null || string.IsNullOrEmpty(login.MobileNo) || string.IsNullOrEmpty(login.Code))
-                return BadRequest("MobileNo and Code are required.");
+            if (login == null || string.IsNullOrEmpty(login.INI) || string.IsNullOrEmpty(login.CODE))
+                return BadRequest("ini and Code are required.");
 
-            var isValid = await _loginRepository.ValidateUserAsync(login.MobileNo, login.Code);
+            var isValid = await _loginRepository.ValidateUserAsync(login.INI, login.CODE);
 
             return Ok(isValid); 
         }

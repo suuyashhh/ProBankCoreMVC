@@ -2,6 +2,6 @@
 {
     public interface ILogin
     {
-        Task<bool> ValidateUserAsync(string mobileNo, string code);
+        Task<bool> ValidateUserAsync(string ini, string code);
     }
 }
