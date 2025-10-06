@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
+using Models;
 using System;
 using System.Data;
 using System.Threading.Tasks;
@@ -16,23 +17,34 @@ namespace ProBankCoreMVC.Repositries
             _context = context;
         }
 
-        // Validate credentials - returns true if a matching user exists
-        public async Task<bool> ValidateUserAsync(string ini, string code)
+        // Query the UserMast table for a matching user and return details
+        public async Task<DTOLogin?> LoginAsync(DTOLogin login)
         {
-            var sql = "SELECT COUNT(1) FROM UserMast WHERE ini = @INI AND code = @CODE";
+            var sql = @"
+                SELECT TOP 1
+                    LOGIN_IP,
+                    NAME,
+                    AUTHORITY,
+                    ACTIVATE,
+                    ini AS INI,
+                    code AS CODE
+                FROM UserMast
+                WHERE ini = @INI AND code = @CODE
+            ";
 
             try
             {
                 using (var connection = _context.CreateConnection())
                 {
-                    var count = await connection.ExecuteScalarAsync<int>(sql, new { INI = ini, CODE = code });
-                    return count > 0;
+                    // QuerySingleOrDefaultAsync will return null when no match
+                    var user = await connection.QuerySingleOrDefaultAsync<DTOLogin>(sql, new { INI = login.INI, CODE = login.CODE });
+                    return user;
                 }
             }
             catch (Exception ex)
             {
-                // consider using a logging framework instead of Console.WriteLine
-                Console.WriteLine($"SQL Error in ValidateUserAsync: {ex.Message}");
+                // Consider logging
+                Console.WriteLine($"SQL Error in LoginAsync: {ex.Message}");
                 throw;
             }
         }
@@ -40,7 +52,6 @@ namespace ProBankCoreMVC.Repositries
         // Store JTI in the user row (single-device enforcement)
         public async Task SetUserJtiAsync(string userId, string jti)
         {
-            // Replace UserId with your actual PK column name if different
             var sql = "UPDATE UserMast SET CurrentJti = @Jti WHERE ini = @UserId";
             try
             {
@@ -56,7 +67,7 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
-        // Retrieve stored JTI for given user
+        // Retrieve stored JTI for given user (by user id or ini)
         public async Task<string?> GetUserJtiAsync(string userId)
         {
             var sql = "SELECT CurrentJti FROM UserMast WHERE ini = @UserId";

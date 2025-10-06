@@ -23,8 +23,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<ILogin, LoginRepository>();
 
-// Auth service
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Redis (optional - keep if you run Redis locally). If not using, comment this out.
 // builder.Services.AddSingleton<IConnectionMultiplexer>(
