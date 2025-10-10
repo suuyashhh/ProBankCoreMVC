@@ -43,8 +43,8 @@ namespace ProBankCoreMVC.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, tokenId),
                 new Claim(ClaimTypes.NameIdentifier, user.INI.ToString()),
                 new Claim(ClaimTypes.Name, user.NAME),
-                new Claim("AUTHORITY", user.AUTHORITY.ToString()),
-                new Claim("ACTIVATE", user.ACTIVATE)
+                new Claim("WORKING_BRANCH", user.WORKING_BRANCH.ToString()),
+                new Claim("ALLOW_BR_SELECTION", user.ALLOW_BR_SELECTION)
             };
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
@@ -70,8 +70,8 @@ namespace ProBankCoreMVC.Controllers
                 {
                     user.INI,
                     user.NAME,
-                    user.ACTIVATE,
-                    user.AUTHORITY,
+                    user.ALLOW_BR_SELECTION,
+                    user.WORKING_BRANCH,
                     user.LOGIN_IP
                 }
             });

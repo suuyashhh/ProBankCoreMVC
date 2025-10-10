@@ -27,8 +27,8 @@ namespace ProBankCoreMVC.Repositries
                 SELECT TOP 1
                     LOGIN_IP,
                     NAME,
-                    AUTHORITY,
-                    ACTIVATE,
+                    WORKING_BRANCH,
+                    ALLOW_BR_SELECTION,
                     ini AS INI,
                     code AS CODE
                 FROM UserMast
