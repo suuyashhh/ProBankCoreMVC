@@ -29,6 +29,7 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddScoped<ILogin, LoginRepository>();
+builder.Services.AddScoped<IBranchMast, BranchMastRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
