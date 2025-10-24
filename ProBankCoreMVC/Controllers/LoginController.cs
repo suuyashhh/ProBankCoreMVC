@@ -18,14 +18,13 @@ namespace ProBankCoreMVC.Controllers
     {
         private readonly ILogin loginRepository;
         private readonly IConfiguration _config;
+        private readonly ConcurrentDictionary<string, string> _userTokenStore;
 
-        // 🔐 In-memory store to track the latest valid token per user
-        private static readonly ConcurrentDictionary<string, string> UserTokenStore = new();
-
-        public LoginController(ILogin loginrepository, IConfiguration config)
+        public LoginController(ILogin loginrepository, IConfiguration config, ConcurrentDictionary<string, string> userTokenStore)
         {
             loginRepository = loginrepository;
             _config = config;
+            _userTokenStore = userTokenStore;
         }
 
         [HttpPost("Login")]
@@ -49,19 +48,18 @@ namespace ProBankCoreMVC.Controllers
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
-            // ⚠️ Token without expiry
+            // Token (no expiry for simplicity)
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            // No expiry
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // 🔄 Store the new token ID and overwrite any old session
-            UserTokenStore[user.INI.ToString()] = tokenId;
+            // ✅ Overwrite any existing session for that user
+            _userTokenStore[user.INI.ToString()] = tokenId;
 
             return Ok(new
             {
@@ -84,46 +82,47 @@ namespace ProBankCoreMVC.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!string.IsNullOrEmpty(userId))
             {
-                UserTokenStore.TryRemove(userId, out _); // Invalidate the token
+                _userTokenStore.TryRemove(userId, out _);
                 return Ok("Logged out successfully");
             }
-
             return Unauthorized();
         }
+    }
 
-        // 🔍 Token check middleware (copy to Program.cs or Middleware folder if needed)
-        public class TokenValidationMiddleware
+    // 🔍 Middleware to validate tokens dynamically
+    public class TokenValidationMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ConcurrentDictionary<string, string> _userTokenStore;
+
+        public TokenValidationMiddleware(RequestDelegate next, ConcurrentDictionary<string, string> userTokenStore)
         {
-            private readonly RequestDelegate _next;
+            _next = next;
+            _userTokenStore = userTokenStore;
+        }
 
-            public TokenValidationMiddleware(RequestDelegate next)
+        public async Task Invoke(HttpContext context)
+        {
+            if (context.User.Identity?.IsAuthenticated == true)
             {
-                _next = next;
-            }
+                var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var jti = context.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
 
-            public async Task Invoke(HttpContext context)
-            {
-                if (context.User.Identity?.IsAuthenticated == true)
+                if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(jti))
                 {
-                    var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                    var jti = context.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-
-                    if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(jti))
+                    if (_userTokenStore.TryGetValue(userId, out var currentJti))
                     {
-                        if (UserTokenStore.TryGetValue(userId, out var currentJti))
+                        if (currentJti != jti)
                         {
-                            if (currentJti != jti)
-                            {
-                                context.Response.StatusCode = 401;
-                                await context.Response.WriteAsync("Session expired. You logged in from another device.");
-                                return;
-                            }
+                            context.Response.StatusCode = 401;
+                            await context.Response.WriteAsync("Session expired. You logged in from another device.");
+                            return;
                         }
                     }
                 }
-
-                await _next(context);
             }
+
+            await _next(context);
         }
     }
 }
