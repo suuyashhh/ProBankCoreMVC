@@ -8,134 +8,121 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace ProBankCoreMVC.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LoginController : ControllerBase
+    public class LoginController : Controller
     {
-        private readonly ILogin _loginRepository;
+        private readonly ILogin loginRepository;
         private readonly IConfiguration _config;
 
-        public LoginController(ILogin loginRepository, IConfiguration config)
+        // 🔐 In-memory store to track the latest valid token per user
+        private static readonly ConcurrentDictionary<string, string> UserTokenStore = new();
+
+        public LoginController(ILogin loginrepository, IConfiguration config)
         {
-            _loginRepository = loginRepository;
+            loginRepository = loginrepository;
             _config = config;
         }
 
-        [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody] DTOLogin login)
+        [HttpPost("Login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] DTOLogin login)
         {
-            if (login == null || string.IsNullOrEmpty(login.INI) || string.IsNullOrEmpty(login.CODE))
-                return BadRequest(new { message = "INI and CODE are required." });
+            var user = await loginRepository.Login(login);
+            if (user == null) return Unauthorized("Invalid credentials");
 
-            // 1) Validate credentials via the repository
-            DTOLogin? user;
-            try
+            var jwtSettings = _config.GetSection("Jwt");
+            var tokenId = Guid.NewGuid().ToString(); // Unique token ID (jti)
+
+            var authClaims = new List<Claim>
             {
-                user = await _loginRepository.LoginAsync(login);
-            }
-            catch (Exception ex)
-            {
-                // If DB error, return 500
-                return StatusCode(500, new { message = "Server error while validating credentials.", detail = ex.Message });
-            }
-
-            if (user == null)
-                return Unauthorized(new { message = "Invalid credentials" });
-
-            // 2) Read JWT settings
-            var jwtSection = _config.GetSection("Jwt");
-            var key = jwtSection.GetValue<string>("Key");
-            var issuer = jwtSection.GetValue<string>("Issuer");
-            var audience = jwtSection.GetValue<string>("Audience");
-            var expiryMinutes = jwtSection.GetValue<int>("ExpiryMinutes", 20); // default to 20 if not set
-
-            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
-            {
-                return StatusCode(500, new { message = "JWT not configured properly on server." });
-            }
-
-            // 3) Create claims and a unique JTI
-            var jti = Guid.NewGuid().ToString();
-
-            // Use INI as NameIdentifier (since your DTO does not contain numeric USER_ID)
-            var nameIdentifier = user.INI ?? login.INI ?? string.Empty;
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Jti, jti),
-                new Claim(ClaimTypes.NameIdentifier, nameIdentifier),
-                new Claim(ClaimTypes.Name, user.NAME ?? string.Empty),
-                new Claim("AUTHORITY", user.AUTHORITY ?? string.Empty),
-                new Claim("ACTIVATE", user.ACTIVATE ?? string.Empty)
+                new Claim(JwtRegisteredClaimNames.Jti, tokenId),
+                new Claim(ClaimTypes.NameIdentifier, user.INI.ToString()),
+                new Claim(ClaimTypes.Name, user.NAME),
+                new Claim("WORKING_BRANCH", user.WORKING_BRANCH.ToString()),
+                new Claim("ALLOW_BR_SELECTION", user.ALLOW_BR_SELECTION)
             };
 
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-            var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
-            var expires = DateTime.UtcNow.AddMinutes(expiryMinutes);
-
-            var jwtToken = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: expires,
-                signingCredentials: creds
+            // ⚠️ Token without expiry
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+            // No expiry
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // 4) Persist the JTI for single-device enforcement (use INI or nameIdentifier)
-            try
-            {
-                if (!string.IsNullOrEmpty(nameIdentifier))
-                {
-                    await _loginRepository.SetUserJtiAsync(nameIdentifier, jti);
-                }
-            }
-            catch (Exception ex)
-            {
-                // If JTI persist fails, still return token but log/return error depends on your policy
-                // For safety, return 500 so clients don't get token that won't validate later
-                return StatusCode(500, new { message = "Server error while storing session data.", detail = ex.Message });
-            }
+            // 🔄 Store the new token ID and overwrite any old session
+            UserTokenStore[user.INI.ToString()] = tokenId;
 
-            // 5) Return token and user details to the client
             return Ok(new
             {
                 token = tokenString,
-                expires = expires,
                 userDetails = new
                 {
                     user.INI,
-                    user.LOGIN_IP,
                     user.NAME,
-                    user.AUTHORITY,
-                    user.ACTIVATE
+                    user.ALLOW_BR_SELECTION,
+                    user.WORKING_BRANCH,
+                    user.LOGIN_IP
                 }
             });
         }
 
+        [HttpPost("Logout")]
         [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
-            // If authentication is enabled, the NameIdentifier claim will be set
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized(new { message = "Not authenticated" });
-
-            try
+            if (!string.IsNullOrEmpty(userId))
             {
-                // Clear JTI to invalidate current token(s)
-                await _loginRepository.SetUserJtiAsync(userId, null);
-                return Ok(new { message = "Logged out" });
+                UserTokenStore.TryRemove(userId, out _); // Invalidate the token
+                return Ok("Logged out successfully");
             }
-            catch (Exception ex)
+
+            return Unauthorized();
+        }
+
+        // 🔍 Token check middleware (copy to Program.cs or Middleware folder if needed)
+        public class TokenValidationMiddleware
+        {
+            private readonly RequestDelegate _next;
+
+            public TokenValidationMiddleware(RequestDelegate next)
             {
-                return StatusCode(500, new { message = "Server error during logout", detail = ex.Message });
+                _next = next;
+            }
+
+            public async Task Invoke(HttpContext context)
+            {
+                if (context.User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    var jti = context.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+                    if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(jti))
+                    {
+                        if (UserTokenStore.TryGetValue(userId, out var currentJti))
+                        {
+                            if (currentJti != jti)
+                            {
+                                context.Response.StatusCode = 401;
+                                await context.Response.WriteAsync("Session expired. You logged in from another device.");
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                await _next(context);
             }
         }
     }
