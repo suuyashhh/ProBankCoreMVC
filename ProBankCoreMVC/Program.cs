@@ -29,6 +29,12 @@ builder.Services.AddSwaggerGen();
 // Dependency injection
 builder.Services.AddScoped<ILogin, LoginRepository>();
 builder.Services.AddScoped<IBranchMast, BranchMastRepository>();
+builder.Services.AddScoped<ICountryMaster, CountryMasterRepository>();
+builder.Services.AddScoped<IStateMaster, StateMasterRepository>();
+builder.Services.AddScoped<IDistrictMaster, DistrictMasterRepository>();
+builder.Services.AddScoped<ITalukaMaster, TalukaMasterRepository>();
+builder.Services.AddScoped<ICityMaster, CityMasterRepository>();
+builder.Services.AddScoped<IAreaMaster, AreaMasterRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
