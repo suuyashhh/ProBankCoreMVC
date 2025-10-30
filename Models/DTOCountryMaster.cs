@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Models
+{
+    public class DTOCountryMaster
+    {
+        public int COUNTRY_CODE { get; set; }
+        public string COUNTRY_NAME { get; set; }
+
+    }
+}
