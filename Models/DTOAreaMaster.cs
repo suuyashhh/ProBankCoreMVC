@@ -10,5 +10,6 @@ namespace Models
     {
         public int AREA_CODE { get; set; }
         public string AREA_NAME { get; set; }
+        public string PIN_CODE { get; set; }
     }
 }
