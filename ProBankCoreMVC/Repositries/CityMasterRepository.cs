@@ -28,7 +28,7 @@ namespace ProBankCoreMVC.Repositries
         {
             var query = @"
                               select
-                              Id As CITY_UNIC_ID,CODE As CITY_CODE,NAME As CITY_NAME  
+                              Id As CITY_UNIC_ID,CODE As CITY_CODE,NAME As CITY_NAME ,PinCode As PIN_CODE  
                               from CityMast ";
             try
             {
@@ -69,14 +69,15 @@ namespace ProBankCoreMVC.Repositries
                     var state =(await _stateMasterRepo.GetStateById(city.COUNTRY_CODE,city.STATE_CODE));
                     var dist =(await _distMasterRepo.GetDistrictById(city.COUNTRY_CODE,city.STATE_CODE,city.DIST_CODE));
                     var talk =(await _talukaMasterRepo.GetTalukaById(city.COUNTRY_CODE,city.STATE_CODE,city.DIST_CODE,city.TALUKA_CODE));
-                    var area =(await _areaMasterRepo.GetAreaById(city.COUNTRY_CODE,city.STATE_CODE,city.DIST_CODE,city.TALUKA_CODE,city.CITY_CODE));
+                    //var area =(await _areaMasterRepo.GetAreaById(city.COUNTRY_CODE,city.STATE_CODE,city.DIST_CODE,city.TALUKA_CODE,city.CITY_CODE));
 
-                    city.COUNTRY_NAME = country.COUNTRY_NAME;
-                    city.STATE_NAME = state.STATE_NAME;
-                    city.DIST_NAME = dist.DIST_NAME;
-                    city.TALUKA_NAME = talk.TALUKA_NAME;
-                    city.AREA_NAME = area.AREA_NAME;
-                    city.AREA_CODE = area.AREA_CODE;
+
+                    city.COUNTRY_NAME = country?.COUNTRY_NAME ?? "null";
+                    city.STATE_NAME = state?.STATE_NAME ?? "null";
+                    city.DIST_NAME = dist?.DIST_NAME ?? "null";
+                    city.TALUKA_NAME = talk?.TALUKA_NAME ?? "null";
+                    //city.AREA_NAME = area?.AREA_NAME ?? "null";
+                    //city.AREA_CODE = area?.AREA_CODE ?? 0;
 
                     return city;
                 }
