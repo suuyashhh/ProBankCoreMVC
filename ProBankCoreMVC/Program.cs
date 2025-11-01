@@ -35,6 +35,14 @@ builder.Services.AddScoped<IDistrictMaster, DistrictMasterRepository>();
 builder.Services.AddScoped<ITalukaMaster, TalukaMasterRepository>();
 builder.Services.AddScoped<ICityMaster, CityMasterRepository>();
 builder.Services.AddScoped<IAreaMaster, AreaMasterRepository>();
+builder.Services.AddScoped<ICastMaster, CastMasterRepository>();
+builder.Services.AddScoped<IReligionMaster, ReligionMasterRepository>();
+builder.Services.AddScoped<IOccupationMaster, OccupationMasterRepository>();
+
+builder.Services.AddScoped<IDireMast, DireMastRepository>();
+builder.Services.AddScoped<IStaffMaster, StaffMasterRepository>();
+builder.Services.AddScoped<IKycAddressMaster, KycAddressMasterRepository>();
+builder.Services.AddScoped<IKycIdMaster, KycIdMasterRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
