@@ -8,7 +8,7 @@ namespace Models
 {
     public class DTOStaffMaster
     {
-        public int KYC_ADDR_ID { get; set; }
-        public String KYC_ADDR_NAME { get; set; }
+        public int STAFF_CODE { get; set; }
+        public String STAFF_NAME { get; set; }
     }
 }
