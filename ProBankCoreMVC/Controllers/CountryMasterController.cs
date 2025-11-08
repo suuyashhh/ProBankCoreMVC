@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Models;
 using ProBankCoreMVC.Interfaces;
 
 namespace ProBankCoreMVC.Controllers
@@ -27,5 +28,26 @@ namespace ProBankCoreMVC.Controllers
                 return StatusCode(500, "An error occurred while fetching Countries.");
             }
         }
+
+        [HttpPost("Save")]
+        public async Task<IActionResult> Save([FromBody] DTOCountryMaster country)
+        {
+            if (country == null || string.IsNullOrWhiteSpace(country.COUNTRY_NAME))
+            {
+                return BadRequest("Country name cannot be empty.");
+            }
+
+            try
+            {
+                await _countryMaster.Save(country);
+                return Ok(new { message = "Country saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while saving the country.");
+            }
+        }
+
+
     }
 }

@@ -8,8 +8,9 @@ namespace Models
 {
     public class DTOCountryMaster
     {
-        public int COUNTRY_CODE { get; set; }
+        public int TRN_NO { get; set; }
         public string COUNTRY_NAME { get; set; }
+        public string DATE { get; set; }
 
     }
 }
