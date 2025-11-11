@@ -16,11 +16,11 @@ namespace ProBankCoreMVC.Controllers
 
         [HttpGet("GetStateById")]
 
-        public async Task<ActionResult> GetStateById(int countryCode, int stateCode)
+        public async Task<ActionResult> GetStateById(int stateCode)
         {
             try
             {
-                var States =await _StateMaster.GetStateById(countryCode, stateCode);
+                var States =await _StateMaster.GetStateById(stateCode);
                 return Ok(States);
             }
             catch (Exception ex)

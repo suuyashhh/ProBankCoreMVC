@@ -14,33 +14,23 @@ namespace ProBankCoreMVC.Controllers
             _cityMaster = cityMaster;
         }
 
-        [HttpGet("GetAllCities")]
-        public async Task<ActionResult> GetAllCities()
+        [HttpGet("GetAllDependencies")]
+        public async Task<ActionResult> GetAllDependencies()
         {
             try
             {
-                var Cities = await _cityMaster.GetAllCities();
-                return Ok(Cities);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+                var result = await _cityMaster.GetAllDependencies();
+                if (result == null || !result.Any())
+                    return NotFound("No cities found.");
 
-        [HttpGet("GetDependencyByCityId")]
-
-        public async Task<ActionResult> GetDependencyByCityId(int cityUnicId)
-        {
-            try
-            {
-                var result = await _cityMaster.GetDependencyByCityId(cityUnicId);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                throw;
+                // Optional: log exception
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
     }
 }

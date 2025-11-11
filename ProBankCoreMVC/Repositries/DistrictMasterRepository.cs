@@ -16,17 +16,17 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
-        public async Task<DTODistrictMaster> GetDistrictById(int countryCode , int stateCode ,int distCode)
+        public async Task<DTODistrictMaster> GetDistrictById(int distCode)
         {
             var query = @"
                         select 
-                            code AS DIST_CODE,name AS DIST_NAME
-                            from DistrictMast where Country_Code=@CountryCode AND State_Code= @StateCode AND code = @distCode ";
+                            TRN_NO,DIST_NAME,STATE_CODE
+                            from MST_DISTRICT where TRN_NO = @distCode ";
             try
             {
                 using (var Connection = _dapperContext.CreateConnection()) 
                 {
-                    var result = await Connection.QueryFirstOrDefaultAsync<DTODistrictMaster>(query, new { CountryCode = countryCode, StateCode = stateCode, DistCode = distCode });
+                    var result = await Connection.QueryFirstOrDefaultAsync<DTODistrictMaster>(query, new { DistCode = distCode });
                     return result;
                 }
             }

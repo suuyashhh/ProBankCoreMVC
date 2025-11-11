@@ -4,6 +4,6 @@ namespace ProBankCoreMVC.Interfaces
 {
     public interface IStateMaster
     {
-        Task<DTOStateMaster> GetStateById(int countryCode,int stateCode);
+        Task<DTOStateMaster> GetStateById(int stateCode);
     }
 }

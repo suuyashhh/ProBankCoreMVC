@@ -15,11 +15,11 @@ namespace ProBankCoreMVC.Controllers
         }
 
         [HttpGet("GetTalukaById")]
-        public async Task<ActionResult> GetTalukaById(int countryCode, int stateCode, int distCode, int talukaCode)
+        public async Task<ActionResult> GetTalukaById(int talukaCode)
         {
             try
             {
-                var Talukas = await _talukaMaster.GetTalukaById(countryCode, stateCode, distCode, talukaCode);
+                var Talukas = await _talukaMaster.GetTalukaById( talukaCode);
                 return Ok(Talukas);
             }
             catch (Exception ex)

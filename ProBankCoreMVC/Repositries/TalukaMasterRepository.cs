@@ -14,17 +14,17 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
-        public async Task<DTOTalukaMaster> GetTalukaById(int countryCode, int stateCode, int distCode, int talukaCode)
+        public async Task<DTOTalukaMaster> GetTalukaById(int talukaCode)
         {
             var query = @"
                             select
-                            code AS TALUKA_CODE,name AS TALUKA_NAME 
-                            from talkmast where Country_Code=@CountryCode AND State_Code= @StateCode AND Dist_Code = @DistCode AND code =@TalukaCode ";
+                            TRN_NO,TALUKA_NAME ,DIST_CODE
+                            from MST_TALUKA where TRN_NO =@TalukaCode ";
             try
             {
                 using (var connection = _dapperContext.CreateConnection())
                 {
-                    var result = await connection.QueryFirstOrDefaultAsync<DTOTalukaMaster>(query, new { CountryCode = countryCode, StateCode = stateCode, DistCode = distCode, TalukaCode = talukaCode });
+                    var result = await connection.QueryFirstOrDefaultAsync<DTOTalukaMaster>(query, new {TalukaCode = talukaCode });
                     return result;
                 }
             }
