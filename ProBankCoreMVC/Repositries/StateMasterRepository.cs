@@ -14,21 +14,20 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
-        public async Task<DTOStateMaster?> GetStateById(int countryCode, int stateCode)
+        public async Task<DTOStateMaster?> GetStateById( int stateCode)
         {
             var query = @"
         SELECT
-            code AS STATE_CODE,
-            name AS STATE_NAME
+            TRN_NO,STATE_NAME,COUNTRY_CODE
         FROM StateMast
-        WHERE Country_Code = @CountryCode AND code = @StateCode";
+        WHERE  TRN_NO = @StateCode";
 
             try
             {
                 using (var connection = _dapperContext.CreateConnection())
                 {
                     var result = await connection.QueryFirstOrDefaultAsync<DTOStateMaster>(query,
-                        new { CountryCode = countryCode, StateCode = stateCode });
+                        new { StateCode = stateCode });
 
                     return result; 
                 }

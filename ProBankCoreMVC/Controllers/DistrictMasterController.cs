@@ -15,11 +15,11 @@ namespace ProBankCoreMVC.Controllers
         }
 
         [HttpGet("GetDistrictById")]
-        public async Task<ActionResult> GetDistrictById(int countryCode, int stateCode, int distCode)
+        public async Task<ActionResult> GetDistrictById(int distCode)
         {
             try
             {
-                var Districts = await _districtMaster.GetDistrictById(countryCode, stateCode, distCode);
+                var Districts = await _districtMaster.GetDistrictById(distCode);
                 return Ok(Districts);
             }
             catch (Exception ex)
