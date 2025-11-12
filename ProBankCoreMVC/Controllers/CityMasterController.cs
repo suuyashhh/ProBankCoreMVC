@@ -14,6 +14,20 @@ namespace ProBankCoreMVC.Controllers
             _cityMaster = cityMaster;
         }
 
+        [HttpGet("GetAllCity")]
+        public async Task<ActionResult> GetAll()
+        {
+            try
+            {
+                var result = await _cityMaster.GetAllCity();
+                return Ok(result);
+            }
+            catch (Exception ex) 
+            {
+                throw;
+            }
+        }
+
         [HttpGet("GetAllDependencies")]
         public async Task<ActionResult> GetAllDependencies()
         {

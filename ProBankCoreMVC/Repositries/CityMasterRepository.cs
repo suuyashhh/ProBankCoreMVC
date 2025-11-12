@@ -8,54 +8,80 @@ namespace ProBankCoreMVC.Repositries
     public class CityMasterRepository : ICityMaster
     {
         private readonly DapperContext _dapperContext;
-        private readonly ICountryMaster _countryMastRepo;
-        private readonly IStateMaster _stateMasterRepo;
-        private readonly IDistrictMaster _distMasterRepo;
-        private readonly ITalukaMaster _talukaMasterRepo;
-        private readonly IAreaMaster _areaMasterRepo;
 
-        public CityMasterRepository(DapperContext dapperContext, ICountryMaster countryMastRepo,IStateMaster stateMasterRepo, IDistrictMaster distMasterRepo, ITalukaMaster talukaMasterRepo, IAreaMaster areaMasterRepo)
+        public CityMasterRepository(DapperContext dapperContext, ICountryMaster countryMastRepo, IStateMaster stateMasterRepo, IDistrictMaster distMasterRepo, ITalukaMaster talukaMasterRepo, IAreaMaster areaMasterRepo)
         {
             _dapperContext = dapperContext;
-            _countryMastRepo = countryMastRepo;
-            _stateMasterRepo = stateMasterRepo;
-            _distMasterRepo = distMasterRepo;
-            _talukaMasterRepo = talukaMasterRepo;
-            _areaMasterRepo = areaMasterRepo;
-        }       
+        }
 
+        public async Task<IEnumerable<DTOCityMaster>> GetAllCity()
+        {
+            var query = @"
+                            select ID,Name from CityMast";
+            try
+            {
+                using (var con = _dapperContext.CreateConnection())
+                {
+                    var result=await con.QueryAsync<DTOCityMaster>(query);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+//        public async Task<IEnumerable<DTOCityMaster>> save(int CountryCode, int StateCode, int DistCode, int TalukaCode, int Code, string Name, int PinCode, string Entry_Date)
+//        {
+//            var query = @"
+//                        insert Into CityMast
+//                        (ID,CountryCode,StateCode,DistCode,TalukaCode,Code,Name,PinCode,Entry_Date)
+//                        values()
+//";
+//            try
+//            {
+//                using(var con = _dapperContext.CreateConnection())
+//                {
+//                    var result= await con.QueryAsync<DTOCityMaster>(query, new { CountryCode = countryCode, StateCode= tateCode })
+//                }
+//            }
+//            catch (Exception)
+//            {
+//                throw;
+//            }
+//        }
 
         public async Task<IEnumerable<DTOCityMaster>> GetAllDependencies()
         {
             const string query = @"
-SELECT
-    c.TRN_NO        AS CITY_CODE,
-    c.CITY_NAME     AS CITY_NAME,
-    t.TRN_NO        AS TALUKA_CODE,
-    t.TALUKA_NAME   AS TALUKA_NAME,
-    d.TRN_NO        AS DIST_CODE,
-    d.DIST_NAME     AS DIST_NAME,
-    s.TRN_NO        AS STATE_CODE,
-    s.STATE_NAME    AS STATE_NAME,
-	CTRY.TRN_NO     AS COUNTRY_CODE,
-	CTRY.COUNTRY_NAME AS COUNTRY_NAME
-FROM DB_A36730_ayushconstruction.dbo.MST_CITY AS c
-LEFT JOIN DB_A36730_ayushconstruction.dbo.MST_TALUKA AS t 
-    ON t.TRN_NO = c.TALUKA_CODE
-LEFT JOIN DB_A36730_ayushconstruction.dbo.MST_DISTICT AS d 
-    ON d.TRN_NO = t.DIST_CODE
-LEFT JOIN DB_A36730_ayushconstruction.dbo.MST_STATE AS s 
-    ON s.TRN_NO = d.STATE_CODE
-LEFT JOIN DB_A36730_ayushconstruction.dbo.MST_COUNTRY AS CTRY 
-    ON CTRY.TRN_NO = s.COUNTRY_CODE
-ORDER BY c.CITY_NAME;
-;
-";
+            SELECT
+                c.PinCode AS pin,
+                c.Code        AS CITY_CODE,
+                c.Name     AS CITY_NAME,
+                t.code        AS TALUKA_CODE,
+                t.name   AS TALUKA_NAME,
+                d.Code        AS DIST_CODE,
+                d.Name     AS DIST_NAME,
+                s.Code        AS STATE_CODE,
+                s.Name    AS STATE_NAME,
+            	CTRY.Code     AS COUNTRY_CODE,
+            	CTRY.Name AS COUNTRY_NAME
+            FROM CityMast AS c
+            LEFT JOIN talkmast AS t 
+                ON t.code = c.TalukaCode AND T.Dist_code = C.DistCode AND t.State_Code= c.StateCode and t.Country_Code = c.CountryCode
+            LEFT JOIN DistrictMast AS d 
+                ON d.Code = C.DistCode AND d.State_Code= c.StateCode and d.Country_Code = c.CountryCode
+            LEFT JOIN StateMast AS s 
+                ON s.Code= c.StateCode and d.Country_Code = c.CountryCode
+            LEFT JOIN CountryMast AS CTRY 
+                ON CTRY.Code = c.CountryCode
+            ORDER BY c.Name;
+            ";
 
             try
             {
                 using var connection = _dapperContext.CreateConnection();
-                // Single query returns all columns mapped into DTOCityMaster by name
                 var cities = (await connection.QueryAsync<DTOCityMaster>(query)).ToList();
                 return cities;
             }
