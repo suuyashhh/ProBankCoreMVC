@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace Models
     public class DTOCityMaster
     {
         public int COUNTRY_CODE { get; set; }
+        public string UniqCode { get; set; }
         public int ID { get; set; }
         public int STATE_CODE { get; set; }
         public int DIST_CODE { get; set; }
