@@ -1,11 +1,16 @@
 ﻿using Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ProBankCoreMVC.Interfaces
 {
     public interface ICityMaster
     {
         Task<IEnumerable<DTOCityMaster>> GetAllCity();
-        //Task<IEnumerable<DTOCityMaster>> save(int CountryCode, int StateCode, int DistCode, int TalukaCode, int Code, string Name, int PinCode, string Entry_Date);
-        Task<IEnumerable<DTOCityMaster>> GetAllDependencies(); 
+        Task<DTOCityMaster> GetCityById(DTOCityMaster objList);
+        Task Save(DTOCityMaster objList);
+        Task Update(DTOCityMaster objList);
+        Task<bool> Delete(DTOCityMaster objList);
+        Task<IEnumerable<DTOCityMaster>> GetAllDependencies();
     }
 }
