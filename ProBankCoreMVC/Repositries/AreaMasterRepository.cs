@@ -15,18 +15,18 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext; 
         }
 
-        public async Task<IEnumerable<DTOAreaMaster>> GetAreaById(int cityCode) 
+        public async Task<IEnumerable<DTOAreaMaster>> GetAreaById(int countryCode, int stateCode, int distCode, int talukaCode, int cityCode) 
         {
             var query = @"
                             select
-                            TRN_NO AS AREA_CODE,AREA_NAME,PIN_CODE
-                            from MST_AREA where CITY_CODE =@CityCode ";
+                            Code AS AREA_CODE,Name AS AREA_NAME,PinCode AS PIN_CODE
+                            from AreaMast where CountryCode=@CountryCode AND StateCode=@StateCode AND DistCode =@DistCode AND TalukaCode=@TalukaCode AND CityCode =@CityCode ";
             try
             {
                 using (var connection = _dapperContext.CreateConnection()) 
                 {
 
-                    var result = await connection.QueryAsync<DTOAreaMaster>(query, new { CityCode= cityCode });
+                    var result = await connection.QueryAsync<DTOAreaMaster>(query, new { CountryCode = countryCode,StateCode= stateCode,DistCode= distCode, TalukaCode=talukaCode, CityCode= cityCode });
                     return result.ToList();
                 }
             }

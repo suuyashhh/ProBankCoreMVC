@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Models;
 using ProBankCoreMVC.Interfaces;
 
 namespace ProBankCoreMVC.Controllers
@@ -14,6 +15,82 @@ namespace ProBankCoreMVC.Controllers
             _cityMaster = cityMaster;
         }
 
+        [HttpGet("GetAllCity")]
+        public async Task<ActionResult> GetAll()
+        {
+            try
+            {
+                var result = await _cityMaster.GetAllCity();
+                return Ok(result);
+            }
+            catch (Exception ex) 
+            {
+                throw;
+            }
+        }
+
+        [HttpGet("GetCityById")]
+        public async Task<IActionResult> GetCityById([FromBody] DTOCityMaster objList)
+        {
+            try
+            {
+                var citys = await _cityMaster.GetCityById(objList);
+                if (citys == null) return NotFound("Country not found.");
+                return Ok(citys);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while fetching citys: {ex.Message}");
+            }
+        }
+
+        [HttpPost("Save")]
+        public async Task<IActionResult> Save([FromBody] DTOCityMaster objList)
+        {
+            if (objList == null || string.IsNullOrWhiteSpace(objList.COUNTRY_NAME))
+                return BadRequest("City name cannot be empty.");
+
+            try
+            {
+                await _cityMaster.Save(objList);
+                return Ok(new { message = "City saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while saving citys: {ex.Message}");
+            }
+        }
+
+        [HttpPost("Update")]
+        public async Task<IActionResult> Update([FromBody] DTOCityMaster objList)
+        {
+            if (objList == null || objList.CITY_CODE <= 0) return BadRequest("Invalid citys ID.");
+
+            try
+            {
+                await _cityMaster.Update(objList);
+                return Ok(new { message = "Country updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while updating citys: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> Delete([FromBody] DTOCityMaster objList)
+        {
+            try
+            {
+                await _cityMaster.Delete(objList);
+                return Ok(new { message = "city deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while deleting citys: {ex.Message}");
+            }
+        }
+
         [HttpGet("GetAllDependencies")]
         public async Task<ActionResult> GetAllDependencies()
         {
@@ -27,7 +104,6 @@ namespace ProBankCoreMVC.Controllers
             }
             catch (Exception ex)
             {
-                // Optional: log exception
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
