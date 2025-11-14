@@ -33,6 +33,28 @@ namespace ProBankCoreMVC.Repositries
             }
 
         }
+
+        public async Task<IEnumerable<DTOTalukaMaster>> GetTaluka(int Dist_code, int State_Code, int Country_Code)
+        {
+            var query = @"select
+                             Code, Name, Dist_code, Country_Code, State_Code
+                            from talkmast where Dist_code = @Dist_code and Country_Code = @Country_Code and State_Code = @State_Code ";
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<DTOTalukaMaster>(query, new { Dist_code = Dist_code, State_Code = State_Code, Country_Code = Country_Code,});
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
+
         public async Task<IEnumerable<DTOTalukaMaster>> GetAll()
         {
             const string query = @"

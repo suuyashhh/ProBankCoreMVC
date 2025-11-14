@@ -6,6 +6,7 @@ namespace ProBankCoreMVC.Interfaces
     {
         Task<DTODistrictMaster> GetDistrictById(int distCode, int Country_Code, int State_Code);
         Task<IEnumerable<DTODistrictMaster>> GetAll();
+        Task<IEnumerable<DTODistrictMaster>> GetDistrict(int Country_Code, int State_Code);
         Task Save(DTODistrictMaster district);
         Task Update(DTODistrictMaster district);
         Task Delete(long Code, int State_Code, int Country_Code);
