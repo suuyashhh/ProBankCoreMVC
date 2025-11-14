@@ -48,7 +48,7 @@ namespace ProBankCoreMVC.Controllers
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOCountryMaster country)
         {
-            if (country == null || string.IsNullOrWhiteSpace(country.COUNTRY_NAME))
+            if (country == null || string.IsNullOrWhiteSpace(country.Name))
                 return BadRequest("Country name cannot be empty.");
 
             try
@@ -65,7 +65,7 @@ namespace ProBankCoreMVC.Controllers
         [HttpPost("Update")]
         public async Task<IActionResult> Update([FromBody] DTOCountryMaster country)
         {
-            if (country == null || country.TRN_NO <= 0) return BadRequest("Invalid country ID.");
+            if (country == null || country.Code <= 0) return BadRequest("Invalid country ID.");
 
             try
             {
@@ -84,7 +84,7 @@ namespace ProBankCoreMVC.Controllers
             try
             {
                 await _countryMaster.Delete(countryCode);
-                return Ok(new { message = "Country deleted successfully." });
+                return Ok(new { message = "state deleted successfully." });
             }
             catch (Exception ex)
             {

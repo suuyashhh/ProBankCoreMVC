@@ -8,8 +8,10 @@ namespace Models
 {
     public class DTODistrictMaster
     {
-        public int STATE_CODE { get; set; }
-        public int TRN_NO { get; set; }
-        public string DIST_NAME { get; set; }
+        public int Country_Code { get; set; }
+        public int State_Code { get; set; }
+        public int Code { get; set; }
+        public string Name { get; set; }
+        public DateTime Entry_Date { get; set; }
     }
 }

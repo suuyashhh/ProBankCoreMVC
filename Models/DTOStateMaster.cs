@@ -8,8 +8,8 @@ namespace Models
 {
     public class DTOStateMaster
     {
-        public int COUNTRY_CODE { get; set; }
-        public int TRN_NO { get; set; }
-        public string STATE_NAME { get; set;}
+        public int Country_Code { get; set; }
+        public int Code { get; set; }
+        public string Name { get; set; }
     }
 }

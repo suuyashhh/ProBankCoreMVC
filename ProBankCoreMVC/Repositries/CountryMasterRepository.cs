@@ -2,9 +2,11 @@
 using Models;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ProBankCoreMVC.Repositries
 {
@@ -20,9 +22,8 @@ namespace ProBankCoreMVC.Repositries
         public async Task<IEnumerable<DTOCountryMaster>> GetAll()
         {
             const string query = @"
-                SELECT TRN_NO, COUNTRY_NAME, DATE
-                FROM MST_COUNTRY
-                ORDER BY TRN_NO DESC";
+                  select Code,Name from CountryMast
+                ORDER BY Code DESC";
 
             using (var conn = _dapperContext.CreateConnection())
             {
@@ -33,9 +34,8 @@ namespace ProBankCoreMVC.Repositries
         public async Task<DTOCountryMaster?> GetCountryById(long countryCode)
         {
             const string query = @"
-                SELECT TRN_NO, COUNTRY_NAME, DATE
-                FROM MST_COUNTRY
-                WHERE TRN_NO = @CountryCode";
+                select Code, Name, Entry_Date from CountryMast
+                WHERE Code = @CountryCode";
 
             using (var conn = _dapperContext.CreateConnection())
             {
@@ -46,8 +46,8 @@ namespace ProBankCoreMVC.Repositries
         public async Task Save(DTOCountryMaster country)
         {
             const string query = @"
-                INSERT INTO MST_COUNTRY (TRN_NO, COUNTRY_NAME, DATE)
-                VALUES (@TRN_NO, @COUNTRY_NAME, @DATE)";
+                INSERT CountryMast(Code, Name, Entry_Date)
+                VALUES (@Code, @Name, @Entry_Date)";
 
             long newCode = await GenerateCountryCode();
 
@@ -55,9 +55,9 @@ namespace ProBankCoreMVC.Repositries
             {
                 await conn.ExecuteAsync(query, new
                 {
-                    TRN_NO = newCode,
-                    COUNTRY_NAME = country.COUNTRY_NAME,
-                    DATE = DateTime.Now
+                    Code = newCode,
+                    Name = country.Name,
+                    Entry_Date = DateTime.Now
                 });
             }
         }
@@ -65,35 +65,36 @@ namespace ProBankCoreMVC.Repositries
         public async Task Update(DTOCountryMaster country)
         {
             const string query = @"
-                UPDATE MST_COUNTRY
-                SET COUNTRY_NAME = @COUNTRY_NAME,
-                    DATE = @DATE
-                WHERE TRN_NO = @TRN_NO";
+                UPDATE CountryMast
+                SET Name = @Name,
+                    Entry_Date = @Entry_Date
+                WHERE Code = @Code";
+
 
             using (var conn = _dapperContext.CreateConnection())
             {
                 await conn.ExecuteAsync(query, new
                 {
-                    country.COUNTRY_NAME,
-                    DATE = DateTime.Now,
-                    country.TRN_NO
+                    country.Name,
+                    Entry_Date = DateTime.Now,
+                    country.Code
                 });
             }
         }
 
         public async Task Delete(long countryCode)
         {
-            const string query = @"DELETE FROM MST_COUNTRY WHERE TRN_NO = @CountryCode";
+            const string query = @"DELETE FROM CountryMast WHERE Code = @Code";
 
             using (var conn = _dapperContext.CreateConnection())
             {
-                await conn.ExecuteAsync(query, new { CountryCode = countryCode });
+                await conn.ExecuteAsync(query, new { Code = countryCode });
             }
         }
 
         private async Task<long> GenerateCountryCode()
         {
-            const string query = "SELECT TOP 1 TRN_NO FROM MST_COUNTRY ORDER BY TRN_NO DESC";
+            const string query = "SELECT TOP 1 Code FROM CountryMast ORDER BY Code DESC";
 
             using (var conn = _dapperContext.CreateConnection())
             {
