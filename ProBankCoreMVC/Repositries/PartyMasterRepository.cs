@@ -16,7 +16,7 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
-        public async Task SavePartyMast(DTOPartyMaster partymaster)
+        public async Task save(DTOPartyMaster partymaster)
         {
             try
             {
@@ -100,30 +100,16 @@ namespace ProBankCoreMVC.Repositries
         }
 
 
-        //private async Task<Int64> GeneratePartyMasterCode(string comId)
-        //{
-        //    // Format: yyMMdd (e.g., 250507 for May 7, 2025)
-        //    string datePart = DateTime.UtcNow.AddHours(5.5).ToString("yyMMdd", CultureInfo.InvariantCulture);
-        //    string dateComboKey = datePart + comId;
+        private async Task<Int64> GeneratePartyMasterCode()
+        {
+            const string query = "select Top 1 CODE from prtymast order by CODE desc";
 
-        //    string query = "SELECT TOP 1 CODE FROM [prtymast] ORDER BY CODE DESC";
-
-        //    using (var conn = _dapperContext.CreateConnection())
-        //    {
-        //        string lastId = await conn.ExecuteScalarAsync<string>(query, new { key = dateComboKey });
-
-        //        int nextNum = 1;
-        //        if (!string.IsNullOrEmpty(lastId))
-        //        {
-        //            // Extract the numeric suffix after date+comId (assumes 9-character prefix)
-        //            if (int.TryParse(lastId.Substring(9), out int lastNum))
-        //                nextNum = lastNum + 1;
-        //        }
-
-        //        // Final TRN_NO: date + comId + nextNum (e.g., 250507101)
-        //        return long.Parse(dateComboKey + nextNum);
-        //    }
-        //}
+            using (var conn = _dapperContext.CreateConnection())
+            {
+                var lastId = await conn.ExecuteScalarAsync<long?>(query);
+                return (lastId ?? 0) + 1;
+            }
+        }
 
 
     }
