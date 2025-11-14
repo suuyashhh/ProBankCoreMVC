@@ -29,7 +29,7 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
-        [HttpGet("GetStateById")]
+        [HttpGet("GetStateById")] 
         public async Task<ActionResult> GetStateById(int stateCode, int countryCode)
         {
             try
@@ -42,6 +42,21 @@ namespace ProBankCoreMVC.Controllers
                 throw;
             }
         }
+
+        [HttpGet("GetState")] 
+        public async Task<ActionResult> GetState( int countryCode)
+        {
+            try
+            {
+                var States = await _StateMaster.GetState( countryCode);
+                return Ok(States);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
 
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOStateMaster state)

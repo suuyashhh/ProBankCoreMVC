@@ -95,6 +95,28 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
+        public async Task<IEnumerable<DTOStateMaster>> GetState( int countryCode)
+        {
+            var query = @"
+            select Code,Name,Country_Code from StateMast
+            WHERE  Country_Code = @Country_Code";
+
+            try
+            {
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<DTOStateMaster>(query,
+                        new { Country_Code = countryCode });
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         private async Task<long> GenerateStateCode(int countryCode)
         {
             const string query = "SELECT TOP 1 Code FROM StateMast where Country_Code= @Country_Code ORDER BY Code DESC";

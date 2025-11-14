@@ -29,6 +29,22 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
+        [HttpGet("GetDistrict")]
+        public async Task<ActionResult> GetDistrict( int Country_Code, int State_Code)
+        {
+            try
+            {
+                var Districts = await _districtMaster.GetDistrict( Country_Code, State_Code);
+                return Ok(Districts);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
+
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {

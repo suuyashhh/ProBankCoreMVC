@@ -29,6 +29,22 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
+
+        [HttpGet("GetTaluka")]
+        public async Task<ActionResult> GetTaluka(int Dist_code,int State_Code, int Country_Code)
+        {
+            try
+            {
+                var Talukas = await _talukaMaster.GetTaluka(Dist_code, State_Code, Country_Code);
+                return Ok(Talukas);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
