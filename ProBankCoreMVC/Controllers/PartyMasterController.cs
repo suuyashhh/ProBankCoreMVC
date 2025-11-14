@@ -17,8 +17,8 @@ namespace ProBankCoreMVC.Controllers
 
 
         [HttpPost]
-        [Route("SavePartyMast")]
-        public async Task<ActionResult<DTOPartyMaster>> SavePartyMast(DTOPartyMaster partymaster)
+        [Route("save")]
+        public async Task<ActionResult<DTOPartyMaster>> save(DTOPartyMaster partymaster)
 
         {
             try
@@ -27,7 +27,7 @@ namespace ProBankCoreMVC.Controllers
                 {
                     return BadRequest();
                 }
-                var createdProperty = _partyMaster.SavePartyMast(partymaster);
+                var createdProperty = _partyMaster.save(partymaster);
                 var result = new
                 {
                     data = partymaster,
