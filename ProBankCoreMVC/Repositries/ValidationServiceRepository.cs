@@ -13,11 +13,12 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<bool> AadharNo(string aadharNo)
         {
-            var sql = @"SELECT COUNT(1) FROM dbo.prtymast WHERE AdharNo = @AadharNo;";
+            var sql = @"SELECT COUNT(1) FROM prtymast WHERE AdharNo = @AadharNo;";
 
             using (var con = _dapperContext.CreateConnection())
             {
                 var count = await con.ExecuteScalarAsync<long>(sql, new { AadharNo = aadharNo?.Trim() });
+
                 return count > 0;
             }
         }
