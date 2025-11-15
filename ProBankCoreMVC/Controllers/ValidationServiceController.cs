@@ -1,5 +1,4 @@
-﻿// ValidationServiceController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProBankCoreMVC.Interfaces;
 using System.Threading.Tasks;
 
@@ -12,7 +11,6 @@ namespace ProBankCoreMVC.Controllers
         private readonly IValidationService _validationService;
         public ValidationServiceController(IValidationService validationService) => _validationService = validationService;
 
-        // call like: GET /api/ValidationService/AadharNo?aadharNo=123456789012
         [HttpGet("AadharNo")]
         public async Task<ActionResult<bool>> AadharNo([FromQuery] string aadharNo)
         {
@@ -26,7 +24,6 @@ namespace ProBankCoreMVC.Controllers
             }
             catch (System.Exception ex)
             {
-                // log ex
                 return StatusCode(500, "Internal server error");
             }
         }
