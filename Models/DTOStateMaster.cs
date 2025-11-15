@@ -11,5 +11,6 @@ namespace Models
         public int Country_Code { get; set; }
         public int Code { get; set; }
         public string Name { get; set; }
+        public string Country_Name { get; set; }
     }
 }
