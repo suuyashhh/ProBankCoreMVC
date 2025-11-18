@@ -29,20 +29,21 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
-        [HttpGet("GetCityById")]
+        [HttpPost("GetCityById")]
         public async Task<IActionResult> GetCityById([FromBody] DTOCityMaster objList)
         {
             try
             {
                 var citys = await _cityMaster.GetCityById(objList);
-                if (citys == null) return NotFound("Country not found.");
+                if (citys == null) return NotFound("City not found.");
                 return Ok(citys);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error while fetching citys: {ex.Message}");
+                return StatusCode(500, $"Error while fetching cities: {ex.Message}");
             }
         }
+
 
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOCityMaster objList)

@@ -19,13 +19,19 @@ namespace ProBankCoreMVC.Repositries
         public async Task<DTODistrictMaster> GetDistrictById(int distCode, int Country_Code, int State_Code)
         {
             var query = @"
-                       select Code, State_Code,Country_Code,Name,Entry_Date from DistrictMast
-                             where Code = @distCode";
+                        select 
+                        d.Code, d.State_Code,d.Country_Code,d.Name,d.Entry_Date,c.Name as Country_Name,s.Name AS State_Name 
+                        from DistrictMast AS d
+                        JOIN CountryMast AS c
+                        ON c.Code = d.Country_Code 
+                        JOIN StateMast AS s
+                        ON s.Code = d.State_Code AND s.Country_Code = d.Country_Code
+                        where d.Code = @distCode AND d.Country_Code=@CountryCode AND d.State_Code=@StateCode";
             try
             {
                 using (var Connection = _dapperContext.CreateConnection())
                 {
-                    var result = await Connection.QueryFirstOrDefaultAsync<DTODistrictMaster>(query, new { DistCode = distCode });
+                    var result = await Connection.QueryFirstOrDefaultAsync<DTODistrictMaster>(query, new { DistCode = distCode, CountryCode= Country_Code, StateCode= State_Code });
                     return result;
                 }
             }
