@@ -16,8 +16,15 @@ namespace ProBankCoreMVC.Repositries
         public async Task<IEnumerable<DTOStateMaster>> GetAll()
         {
             const string query = @"
-                  select Code,Name,Country_Code from StateMast
-                ORDER BY Code DESC";
+                 SELECT
+                      s.Code,
+                      s.Name,
+                      s.Country_Code,
+                      c.Name AS Country_Name
+                    FROM StateMast AS s
+                    JOIN CountryMast AS c
+                      ON c.Code = s.Country_Code
+                    ORDER BY s.Code DESC;";
 
             using (var conn = _dapperContext.CreateConnection())
             {
@@ -75,9 +82,13 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<DTOStateMaster?> GetStateById(int stateCode, int countryCode)
         {
-            var query = @"
-            select Code,Name,Country_Code from StateMast
-            WHERE  Code = @StateCode and Country_Code = @Country_Code";
+            var query = @"            
+                            select 
+                            s.Code,s.Name,s.Country_Code,c.Name AS Country_Name
+                            from StateMast AS s
+                            JOIN CountryMast AS c
+                            ON c.Code = s.Country_Code
+                            WHERE  s.Code = @StateCode and s.Country_Code = @Country_Code";
 
             try
             {

@@ -35,7 +35,7 @@ namespace ProBankCoreMVC.Controllers
             if (user == null) return Unauthorized("Invalid credentials");
 
             var jwtSettings = _config.GetSection("Jwt");
-            var tokenId = Guid.NewGuid().ToString(); // Unique token ID (jti)
+            var tokenId = Guid.NewGuid().ToString(); // Unique token ID (jti) 
 
             var authClaims = new List<Claim>
             {
@@ -48,7 +48,7 @@ namespace ProBankCoreMVC.Controllers
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
-            // Token (no expiry for simplicity)
+            // Token (no expiry for simplicity) 
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
@@ -58,7 +58,7 @@ namespace ProBankCoreMVC.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // ✅ Overwrite any existing session for that user
+            // ✅ Overwrite any existing session for that user 
             _userTokenStore[user.INI.ToString()] = tokenId;
 
             return Ok(new
@@ -87,9 +87,30 @@ namespace ProBankCoreMVC.Controllers
             }
             return Unauthorized();
         }
+
+        [HttpGet("CheckAuthorize")]
+        [Authorize]
+        public IActionResult CheckAuthorize()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(jti))
+                return Unauthorized(new { message = "INVALID_TOKEN" });
+
+            if (_userTokenStore.TryGetValue(userId, out var currentJti))
+            {
+                if (currentJti != jti)
+                    return Unauthorized(new { message = "LOGGED_OUT_OTHER_DEVICE" });
+            }
+
+            return Ok(new { authorized = true });
+        }
+
+
     }
 
-    // 🔍 Middleware to validate tokens dynamically
+    // 🔍 Middleware to validate tokens dynamically 
     public class TokenValidationMiddleware
     {
         private readonly RequestDelegate _next;
@@ -115,7 +136,8 @@ namespace ProBankCoreMVC.Controllers
                         if (currentJti != jti)
                         {
                             context.Response.StatusCode = 401;
-                            await context.Response.WriteAsync("Session expired. You logged in from another device.");
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync("{\"message\":\"LOGGED_OUT_OTHER_DEVICE\"}");
                             return;
                         }
                     }
@@ -124,5 +146,6 @@ namespace ProBankCoreMVC.Controllers
 
             await _next(context);
         }
+
     }
 }

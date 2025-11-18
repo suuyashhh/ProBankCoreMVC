@@ -39,6 +39,7 @@ builder.Services.AddScoped<ICastMaster, CastMasterRepository>();
 builder.Services.AddScoped<IReligionMaster, ReligionMasterRepository>();
 builder.Services.AddScoped<IOccupationMaster, OccupationMasterRepository>();
 builder.Services.AddScoped<IValidationService, ValidationServiceRepository>();
+builder.Services.AddScoped<IPartyMaster, PartyMasterRepository>();
 
 builder.Services.AddScoped<IDireMast, DireMastRepository>();
 builder.Services.AddScoped<IStaffMaster, StaffMasterRepository>();

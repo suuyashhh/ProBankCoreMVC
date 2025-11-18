@@ -36,22 +36,35 @@ namespace ProBankCoreMVC.Repositries
         public async Task<DTOCityMaster> GetCityById(DTOCityMaster objList)
         {
             const string query = @"
-                SELECT 
-                    Code       AS CITY_CODE,
-                    CountryCode,
-                    StateCode,
-                    DistCode,
-                    TalukaCode,
-                    Name       AS CITY_NAME,
-                    PinCode    AS pin,
-                    Entry_Date
-                FROM CityMast
-                WHERE 
-                    CountryCode = @CountryCode AND
-                    StateCode   = @StateCode AND
-                    DistCode    = @DistCode AND
-                    TalukaCode  = @TalukaCode AND
-                    Code        = @Code;";
+               SELECT 
+                    city.Code       AS CITY_CODE,
+                    city.CountryCode AS COUNTRY_CODE,
+                    city.StateCode AS STATE_CODE,
+                    city.DistCode AS DIST_CODE,
+                    city.TalukaCode TALUKA_CODE,
+                    city.Name       AS CITY_NAME,
+                    city.PinCode    AS pin,
+                	 c.Name AS COUNTRY_NAME,
+                	 s.Name AS STATE_NAME,
+                	 d.Name AS DIST_NAME,
+                	 t.name AS TALUKA_NAME
+
+                FROM CityMast  as city
+                join CountryMast AS c
+                ON c.Code=city.CountryCode
+                JOIN StateMast AS s
+                ON s.Code=city.StateCode AND s.Country_Code=city.CountryCode
+                JOIN DistrictMast AS d
+                ON d.Code=city.DistCode AND d.Country_Code=city.CountryCode AND d.State_Code=city.StateCode
+                JOIN talkmast AS t
+                ON t.code=city.TalukaCode AND t.Country_Code=city.CountryCode AND t.State_Code=city.StateCode AND t.Dist_code=city.DistCode
+
+                WHERE  
+                    city.CountryCode = @CountryCode AND
+                    city.StateCode   = @StateCode AND
+                    city.DistCode    = @DistCode AND
+                    city.TalukaCode  = @TalukaCode AND
+                    city.Code        = @Code;";
 
             using var conn = _dapperContext.CreateConnection();
             var result = await conn.QueryFirstOrDefaultAsync<DTOCityMaster>(query, new
