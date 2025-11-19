@@ -12,8 +12,8 @@ namespace Models
         public int State_Code { get; set; }
         public int Code { get; set; }
         public string Name { get; set; }
-        public string Country_Name { get; set; }
-        public string State_Name { get; set; }
-        public DateTime Entry_Date { get; set; }
+        public string? Country_Name { get; set; }
+        public string? State_Name { get; set; }
+        public DateTime? Entry_Date { get; set; }
     }
 }

@@ -81,11 +81,11 @@ namespace ProBankCoreMVC.Repositries
         public async Task Save(DTODistrictMaster objList)
         {
             const string query = @"
-                INSERT DistrictMast(Code, State_Code , Country_Code, Name, Entry_Date)
-                VALUES ( @Code, @State_Code, @Country_Code, @Name, @Entry_Date)";
+    INSERT INTO DistrictMast (Code, State_Code, Country_Code, Name, Entry_Date)
+    VALUES (@Code, @State_Code, @Country_Code, @Name, @Entry_Date)";
 
 
-            long newCode = await GenerateDistrictCode();
+            long newCode = await GenerateDistrictCode(objList.Country_Code,objList.State_Code);
 
             using (var conn = _dapperContext.CreateConnection())
             {
@@ -136,13 +136,13 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
-        private async Task<long> GenerateDistrictCode()
+        private async Task<long> GenerateDistrictCode(int Country_Code , int State_Code)
         {
-            const string query = "SELECT TOP 1 Code FROM DistrictMast  ORDER BY Code DESC";
+            const string query = "SELECT TOP 1 Code FROM DistrictMast WHERE Country_Code=@CountryCode AND State_Code=@StateCode  ORDER BY Code DESC";
 
             using (var conn = _dapperContext.CreateConnection())
             {
-                var lastId = await conn.ExecuteScalarAsync<long?>(query);
+                var lastId = await conn.ExecuteScalarAsync<long?>(query, new {CountryCode= Country_Code , StateCode= State_Code });
                 return (lastId ?? 0) + 1;
             }
         }
