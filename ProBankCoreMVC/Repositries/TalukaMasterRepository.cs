@@ -82,7 +82,7 @@ namespace ProBankCoreMVC.Repositries
                 INSERT INTO talkmast (Code, Country_Code, name, mname, Entry_Date)
                 VALUES (@Code, @Country_Code, @Name, @mname, @Entry_Date)";
 
-            long newCode = await GenerateTalukaCode();
+            long newCode = await GenerateTalukaCode(taluka.Country_Code, taluka.State_Code, taluka.Dist_code);
 
             using (var conn = _dapperContext.CreateConnection())
             {
@@ -134,13 +134,13 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
-        private async Task<long> GenerateTalukaCode()
+        private async Task<long> GenerateTalukaCode(int Country_Code, int State_Code, int Dist_code)
         {
-            const string query = "SELECT TOP 1 Code FROM talkmast ORDER BY Code DESC";
+            const string query = "SELECT TOP 1 Code FROM talkmast WHERE Country_Code=@CountryCode AND State_Code=@StateCode AND Dist_code=@Distcode ORDER BY Code DESC";
 
             using (var conn = _dapperContext.CreateConnection())
             {
-                var lastId = await conn.ExecuteScalarAsync<long?>(query);
+                var lastId = await conn.ExecuteScalarAsync<long?>(query, new { CountryCode= Country_Code, StateCode = State_Code, Distcode= Dist_code });
                 return (lastId ?? 0) + 1;
             }
         }
