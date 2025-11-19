@@ -60,12 +60,12 @@ namespace ProBankCoreMVC.Repositries
 
         }
 
-        public async Task<bool> PhoneNo(string phone1)
+        public async Task<bool> PhoneNo(string PhoneNo)
         {
-            var sql = @"SELECT COUNT(1) FROM prtymast WHERE PHONE1 = @PhoneNo";
+            var sql = @"SELECT COUNT(1) FROM prtymast WHERE PHONE = @PhoneNo";
             using (var con = _dapperContext.CreateConnection())
             {
-                var count = await con.ExecuteScalarAsync<long>(sql, new { PhoneNo = phone1 });
+                var count = await con.ExecuteScalarAsync<long>(sql, new { PhoneNo = PhoneNo });
                 return count > 0;
             }
 

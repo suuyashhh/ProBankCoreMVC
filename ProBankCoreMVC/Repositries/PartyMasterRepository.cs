@@ -1,9 +1,10 @@
-﻿using Dapper;
+﻿using System.Data;
+using System.Globalization;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Models;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
-using System.Data;
-using System.Globalization;
 
 namespace ProBankCoreMVC.Repositries
 {
@@ -36,176 +37,215 @@ namespace ProBankCoreMVC.Repositries
         //    }
         //}
 
-        public async Task save(DTOPartyMaster partymaster)
+        public async Task<string> Save(DTOPartyMaster p)
         {
-            if (partymaster == null) throw new ArgumentNullException(nameof(partymaster));
+            if (p == null) throw new ArgumentNullException(nameof(p));
 
             try
             {
                 var query = "sp_Insert_Update_prtymast";
 
-                // generate new CODE (same as you had)
-                Int64 newId = await GeneratePartyMasterCode();
+                // Generate new CODE exactly as you did before (used for insert)
+                long newCode = await GeneratePartyMasterCode();
 
-                var parameters = new DynamicParameters();
+                var prm = new DynamicParameters();
 
-                // Mode: 1 => Insert (your SP checks @flag)
-                parameters.Add("@flag", 1, DbType.Int32);
+                // required flags
+                prm.Add("@flag", 1, DbType.Int32);                // 1 = insert
+                prm.Add("@CODE", newCode, DbType.Int64);
 
-                // required CODE
-                parameters.Add("@CODE", newId, DbType.Int64);
+                // Map EVERY parameter as declared in your SP header.
+                // NOTE: parameter names match the ALTER PROCEDURE header you pasted.
 
-                // Map DTO properties -> SP params (use only DTO properties; use defaults for others)
-                parameters.Add("@brnc_code", partymaster.brnc_Code, DbType.Int64);
-                parameters.Add("@AcType", partymaster.AcType.ToString(), DbType.String); // SP expects nvarchar(1)
-                parameters.Add("@name", partymaster.name ?? string.Empty, DbType.String);
-                parameters.Add("@nmprefix", partymaster.name_Prefix ?? string.Empty, DbType.String);
-                parameters.Add("@pan_no", partymaster.pan_no ?? string.Empty, DbType.String);
-                parameters.Add("@GSTNo", partymaster.GST_No ?? string.Empty, DbType.String);
+                prm.Add("@brnc_code", p.brnc_code, DbType.Decimal); // numeric(18,0)
+                prm.Add("@AcType", p.AcType ?? string.Empty, DbType.String);
+                prm.Add("@name", p.name ?? string.Empty, DbType.String);
+                prm.Add("@nmprefix", p.nmprefix ?? string.Empty, DbType.String);
+                prm.Add("@pan_no", p.pan_no ?? string.Empty, DbType.String);
+                prm.Add("@GSTNo", p.GSTNo ?? string.Empty, DbType.String);
 
-                parameters.Add("@ADDR1", partymaster.ADDR1 ?? string.Empty, DbType.String);
-                parameters.Add("@ADDR2", partymaster.ADDR2 ?? string.Empty, DbType.String);
-                parameters.Add("@ADDR3", partymaster.ADDR3 ?? string.Empty, DbType.String);
-                // PIN is numeric in SP; DTO has PIN as string - try parse, fallback 0
-                if (Int64.TryParse(partymaster.PIN ?? "0", out var pinVal)) parameters.Add("@PIN", pinVal, DbType.Int64);
-                else parameters.Add("@PIN", 0, DbType.Int64);
+                prm.Add("@ADDR1", p.ADDR1 ?? string.Empty, DbType.String);
+                prm.Add("@ADDR2", p.ADDR2 ?? string.Empty, DbType.String);
+                prm.Add("@ADDR3", p.ADDR3 ?? string.Empty, DbType.String);
+                prm.Add("@PIN", p.PIN, DbType.Int64);
 
-                // nationality/state/district/taluka/city/area
-                parameters.Add("@NationalityCode", partymaster.NationalityCode, DbType.Int64);
-                parameters.Add("@NATIONALITY", partymaster.NATIONALITY ?? string.Empty, DbType.String);
-                parameters.Add("@Statecode", partymaster.StateCode, DbType.Int64);
-                parameters.Add("@State", partymaster.State ?? string.Empty, DbType.String);
-                parameters.Add("@DistCode", partymaster.DistrictCode, DbType.Int64);
-                parameters.Add("@District", partymaster.District ?? string.Empty, DbType.String);
-                parameters.Add("@Talukacode", partymaster.TalukaCode, DbType.Int64);
-                parameters.Add("@Taluka", partymaster.Taluka ?? string.Empty, DbType.String);
-                parameters.Add("@Citycode", partymaster.CityCode, DbType.Int64);
-                parameters.Add("@City", partymaster.City ?? string.Empty, DbType.String);
-                parameters.Add("@Area_code", partymaster.Area_code, DbType.Int64);
-                // Cor* fields
-                parameters.Add("@CorADDR1", partymaster.CorAddr1 ?? string.Empty, DbType.String);
-                parameters.Add("@CorADDR2", partymaster.CorAddr2 ?? string.Empty, DbType.String);
-                parameters.Add("@CorADDR3", partymaster.CorAddr3 ?? string.Empty, DbType.String);
-                if (Int64.TryParse(partymaster.CorPincCode ?? "0", out var corPin)) parameters.Add("@CorPIN", corPin, DbType.Int64);
-                else parameters.Add("@CorPIN", 0, DbType.Int64);
+                prm.Add("@NationalityCode", p.NationalityCode ?? 0, DbType.Decimal);
+                prm.Add("@NATIONALITY", p.NATIONALITY ?? string.Empty, DbType.String);
 
-                parameters.Add("@Cor_NationalityCode", partymaster.Cor_NationalityCode, DbType.Int64);
-                parameters.Add("@Cor_NATIONALITY", partymaster.Cor_NATIONALITY ?? string.Empty, DbType.String);
-                parameters.Add("@Cor_Statecode", partymaster.Cor_StateCode, DbType.Int64);
-                parameters.Add("@Cor_State", partymaster.Cor_State ?? string.Empty, DbType.String);
-                parameters.Add("@Cor_DistCode", partymaster.Cor_DistrictCode, DbType.Int64);
-                parameters.Add("@Cor_District", partymaster.Cor_District ?? string.Empty, DbType.String);
-                parameters.Add("@Cor_Talukacode", partymaster.Cor_TalukaCode, DbType.Int64);
-                parameters.Add("@Cor_Taluka", partymaster.Cor_Taluka ?? string.Empty, DbType.String);
-                parameters.Add("@Cor_Citycode", partymaster.Cor_CityCode, DbType.Int64);
-                parameters.Add("@Cor_City", partymaster.Cor_City ?? string.Empty, DbType.String);
-                parameters.Add("@Cor_Area_code", partymaster.Cor_Area_code, DbType.Int64);
+                // use parameter name exactly as SP header: @Statecode etc.
+                prm.Add("@Statecode", p.Statecode ?? 0, DbType.Decimal);
+                prm.Add("@State", p.State ?? string.Empty, DbType.String);
 
-                // Phones / contact
-                parameters.Add("@PHONE", partymaster.PHONE ?? string.Empty, DbType.String);
-                parameters.Add("@PHONE1", partymaster.PHONE1 ?? string.Empty, DbType.String);
-                //parameters.Add("@Mobile", partymaster.Mobile ?? string.Empty, DbType.String);
-                parameters.Add("@EMAIL_ID", partymaster.EMAIL_ID ?? string.Empty, DbType.String);
+                prm.Add("@DistCode", p.DistCode ?? 0, DbType.Decimal);
+                prm.Add("@District", p.District ?? string.Empty, DbType.String);
 
-                // Personal info
-                parameters.Add("@AGE", partymaster.AGE, DbType.Int32);
-                parameters.Add("@birthdate", partymaster.birthdate == default(DateTime) ? (DateTime?)null : partymaster.birthdate, DbType.DateTime);
-                parameters.Add("@SEX", partymaster.SEX ?? string.Empty, DbType.String);
+                prm.Add("@Talukacode", p.Talukacode ?? 0, DbType.Decimal);
+                prm.Add("@Taluka", p.Taluka ?? string.Empty, DbType.String);
 
-                parameters.Add("@OCCU", partymaster.OCCU, DbType.Int32);
-                parameters.Add("@Family_code", partymaster.Family_code, DbType.Int32);
-                parameters.Add("@FATHERNAME", partymaster.FATHERNAME ?? string.Empty, DbType.String);
+                prm.Add("@Citycode", p.Citycode ?? 0, DbType.Decimal);
+                prm.Add("@City", p.City ?? string.Empty, DbType.String);
 
-                // Office / company fields
-                parameters.Add("@officename", partymaster.officename ?? string.Empty, DbType.String);
-                parameters.Add("@OFFICEADDR1", partymaster.OFFICEADDR1 ?? string.Empty, DbType.String);
-                parameters.Add("@OFFICEADDR2", partymaster.OFFICEADDR2 ?? string.Empty, DbType.String);
-                parameters.Add("@OFFICEADDR3", partymaster.OFFICEADDR3 ?? string.Empty, DbType.String);
-                if (Int64.TryParse(partymaster.OFFICEPIN ?? "0", out var offPin)) parameters.Add("@OFFICEPIN", offPin, DbType.Int64);
-                else parameters.Add("@OFFICEPIN", 0, DbType.Int64);
-                parameters.Add("@OFFICEPHONE", partymaster.OFFICEPHONE ?? string.Empty, DbType.String);
-                parameters.Add("@OFFICEPHONE1", partymaster.OFFICEPHONE1 ?? string.Empty, DbType.String);
+                prm.Add("@Area_code", p.Area_code ?? 0, DbType.Decimal);
+                prm.Add("@Area", p.Area ?? string.Empty, DbType.String);
+                prm.Add("@chkSameadd", p.chkSameadd ?? 0, DbType.Decimal);
 
-                // KYC
-                parameters.Add("@KycIdProof", partymaster.KycIdProof, DbType.Int32);
-                parameters.Add("@KycIdProof_Code", partymaster.KycIdProof_Code, DbType.Int64);
-                parameters.Add("@KycAddrProof", partymaster.KycAddrProof, DbType.Int32);
-                parameters.Add("@KycAddrProof_Code", partymaster.KycAddrProof_Code, DbType.Int64);
+                // Correspondence
+                prm.Add("@CorADDR1", p.CorADDR1 ?? string.Empty, DbType.String);
+                prm.Add("@CorADDR2", p.CorADDR2 ?? string.Empty, DbType.String);
+                prm.Add("@CorADDR3", p.CorADDR3 ?? string.Empty, DbType.String);
+                prm.Add("@CorPIN", p.CorPIN, DbType.Int64);
 
-                // Numeric/other DTO fields
-                parameters.Add("@income", partymaster.income, DbType.Int64);
-                parameters.Add("@Uniq_ID", partymaster.Uniq_ID, DbType.Int64);
+                prm.Add("@Cor_NationalityCode", p.Cor_NationalityCode ?? 0, DbType.Decimal);
+                prm.Add("@Cor_NATIONALITY", p.Cor_NATIONALITY ?? string.Empty, DbType.String);
+                prm.Add("@Cor_Statecode", p.Cor_Statecode ?? 0, DbType.Decimal);
+                prm.Add("@Cor_State", p.Cor_State ?? string.Empty, DbType.String);
+                prm.Add("@Cor_DistCode", p.Cor_DistCode ?? 0, DbType.Decimal);
+                prm.Add("@Cor_District", p.Cor_District ?? string.Empty, DbType.String);
+                prm.Add("@Cor_Talukacode", p.Cor_Talukacode ?? 0, DbType.Decimal);
+                prm.Add("@Cor_Taluka", p.Cor_Taluka ?? string.Empty, DbType.String);
+                prm.Add("@Cor_Citycode", p.Cor_Citycode ?? 0, DbType.Decimal);
+                prm.Add("@Cor_City", p.Cor_City ?? string.Empty, DbType.String);
+                prm.Add("@Cor_Area_code", p.Cor_Area_code ?? 0, DbType.Decimal);
+                prm.Add("@Cor_Area", p.Cor_Area  ?? string.Empty, DbType.String);
 
-                // Cast / Religion
-                parameters.Add("@Cast", partymaster.Cast, DbType.Int64);
-                parameters.Add("@Religon", partymaster.Religion, DbType.Int64);
+                // Phone / zone / sms
+                prm.Add("@PHONE", p.PHONE ?? string.Empty, DbType.String);
+                prm.Add("@PHONE1", p.PHONE1 ?? string.Empty, DbType.String);
+                prm.Add("@zonecode", p.zonecode ?? 0, DbType.Decimal);
+                prm.Add("@Send_sms", p.Send_sms ?? false, DbType.Boolean);
 
-                // Flags from DTO
-                parameters.Add("@chkSameadd", partymaster.Chk_SameAddress, DbType.Int32);
+                // Personal numeric fields
+                prm.Add("@AGE", p.AGE ?? 0, DbType.Decimal);
+                prm.Add("@birthdate", p.birthdate ?? (DateTime?)null, DbType.DateTime);
+                prm.Add("@SEX", p.SEX ?? string.Empty, DbType.String);
+                prm.Add("@OCCU", p.OCCU ?? 0, DbType.Decimal);
+                prm.Add("@Family_code", p.Family_code ?? 0, DbType.Decimal);
+                prm.Add("@MEMBER_NR", p.MEMBER_NR ?? string.Empty, DbType.String);
+                prm.Add("@MEMBER_NO", p.MEMBER_NO ?? 0, DbType.Decimal);
 
-                // Provide defaults for SP parameters not present in DTO (so SP signature is satisfied)
-                parameters.Add("@MEMBER_NR", DBNull.Value, DbType.String);
-                parameters.Add("@MEMBER_NO", 0, DbType.Int32);
-                parameters.Add("@zonecode", 0, DbType.Int32);
-                parameters.Add("@Send_sms", 0, DbType.Int32);
-                parameters.Add("@ST_DIR", "O", DbType.String);
-                parameters.Add("@Ref_STDIR", 0, DbType.Int32);
-                parameters.Add("@voteridno", partymaster.AdharNo != null ? string.Empty : string.Empty, DbType.String); // keep empty (DTO has AdharNo but not voter; adjust if you want)
-                parameters.Add("@AdharNo", partymaster.AdharNo ?? string.Empty, DbType.String);
-                parameters.Add("@passportno", string.Empty, DbType.String);
-                parameters.Add("@passexpdate", null, DbType.DateTime);
-                parameters.Add("@passauth", string.Empty, DbType.String);
-                parameters.Add("@otherid", string.Empty, DbType.String);
-                parameters.Add("@Driving_License", string.Empty, DbType.String);
-                parameters.Add("@Driving_License_ExpDate", null, DbType.DateTime);
-                parameters.Add("@rationno", string.Empty, DbType.String);
+                // Status fields
+                prm.Add("@ST_DIR", p.ST_DIR ?? "O", DbType.String);
+                prm.Add("@Ref_STDIR", p.Ref_STDIR ?? 0, DbType.Decimal);
 
-                // Company/Firm fields not in DTO - supply defaults
-                parameters.Add("@COMPREGNO", string.Empty, DbType.String);
-                parameters.Add("@COMPREGDT", string.Empty, DbType.String);
-                parameters.Add("@COMPBRANCH", string.Empty, DbType.String);
-                parameters.Add("@COMPNATURE", string.Empty, DbType.String);
-                parameters.Add("@COMPPAIDCAPT", string.Empty, DbType.String);
-                parameters.Add("@COMPTURNOVER", 0.0m, DbType.Decimal);
-                parameters.Add("@COMPNETWORTH", 0, DbType.Int64);
-                parameters.Add("@Propritor1", string.Empty, DbType.String);
-                parameters.Add("@Propritor2", string.Empty, DbType.String);
+                // IDs & docs
+                prm.Add("@AdharNo", p.AdharNo ?? string.Empty, DbType.String);
+                prm.Add("@voteridno", p.voteridno ?? string.Empty, DbType.String);
+                prm.Add("@passportno", p.passportno ?? string.Empty, DbType.String);
+                prm.Add("@passexpdate", p.passexpdate ?? (DateTime?)null, DbType.DateTime);
+                prm.Add("@passauth", p.passauth ?? string.Empty, DbType.String);
+                prm.Add("@otherid", p.otherid ?? string.Empty, DbType.String);
+                prm.Add("@Driving_License", p.Driving_License ?? string.Empty, DbType.String);
+                prm.Add("@Driving_License_ExpDate", p.Driving_License_ExpDate ?? (DateTime?)null, DbType.DateTime);
+                prm.Add("@rationno", p.rationno ?? string.Empty, DbType.String);
 
-                // Operation metadata
-                parameters.Add("@opn_by", string.Empty, DbType.String);
-                parameters.Add("@IP", string.Empty, DbType.String);
+                // Other details
+                prm.Add("@FATHERNAME", p.FATHERNAME ?? string.Empty, DbType.String);
+                prm.Add("@officename", p.officename ?? string.Empty, DbType.String);
+                prm.Add("@OFFICEADDR1", p.OFFICEADDR1 ?? string.Empty, DbType.String);
+                prm.Add("@OFFICEADDR2", p.OFFICEADDR2 ?? string.Empty, DbType.String);
+                prm.Add("@OFFICEADDR3", p.OFFICEADDR3 ?? string.Empty, DbType.String);
+                prm.Add("@OFFICEPIN", p.OFFICEPIN, DbType.Int64);
+                prm.Add("@OFFICEPHONE", p.OFFICEPHONE ?? string.Empty, DbType.String);
+                prm.Add("@OFFICEPHONE1", p.OFFICEPHONE1 ?? string.Empty, DbType.String);
+                prm.Add("@EMAIL_ID", p.EMAIL_ID ?? string.Empty, DbType.String);
 
-                // Output message
-                parameters.Add("@msg", dbType: DbType.String, size: 4000, direction: ParameterDirection.Output);
+                //Benefi/ciary bank info(SP header includes these)
+                prm.Add("@Name_Bneficiary", p.Name_Bneficiary ?? string.Empty, DbType.String);
+                prm.Add("@AccountNo_Bneficiary", p.AccountNo_Bneficiary ?? string.Empty, DbType.String);
+                prm.Add("@IFSCODE_Bneficiary", p.IFSCODE_Bneficiary ?? string.Empty, DbType.String);
+                prm.Add("@BankName_Bneficiary", p.BankName_Bneficiary ?? string.Empty, DbType.String);
+                prm.Add("@BrName_Bneficiary", p.BrName_Bneficiary ?? string.Empty, DbType.String);
+                prm.Add("@BankName_Bneficiary", "");
+                prm.Add("@BrName_Bneficiary", "");
 
-                using (var connection = _dapperContext.CreateConnection())
+
+                // Company / Firm
+                prm.Add("@COMPREGNO", p.COMPREGNO ?? string.Empty, DbType.String);
+                prm.Add("@COMPREGDT", p.COMPREGDT ?? string.Empty, DbType.String);
+                prm.Add("@COMPBRANCH", p.COMPBRANCH ?? string.Empty, DbType.String);
+                prm.Add("@COMPNATURE", p.COMPNATURE ?? string.Empty, DbType.String);
+                prm.Add("@COMPPAIDCAPT", p.COMPPAIDCAPT ?? string.Empty, DbType.String);
+                prm.Add("@COMPTURNOVER", p.COMPTURNOVER ?? 0m, DbType.Decimal);
+                prm.Add("@COMPNETWORTH", p.COMPNETWORTH ?? 0, DbType.Decimal);
+                prm.Add("@Propritor1", p.Propritor1 ?? string.Empty, DbType.String);
+                prm.Add("@Propritor2", p.Propritor2 ?? string.Empty, DbType.String);
+
+                // Cast / religion / KYC codes
+                prm.Add("@Cast", p.Cast ?? 0, DbType.Decimal);
+                prm.Add("@Religon", p.Religon ?? 0, DbType.Decimal);
+
+                prm.Add("@KycAddrProof", p.KycAddrProof ?? false, DbType.Boolean);
+                prm.Add("@KycAddrProof_Code", p.KycAddrProof_Code ?? 0, DbType.Decimal);
+                prm.Add("@KycIdProof", p.KycIdProof ?? false, DbType.Boolean);
+                prm.Add("@KycIdProof_Code", p.KycIdProof_Code ?? 0, DbType.Decimal);
+
+                // KYC doc numbers
+                //prm.Add("@KycIdProof_DocNo", p.KycIdProof_DocNo ?? string.Empty, DbType.String);
+                //prm.Add("@KycAddrProof_DocNo", p.KycAddrProof_DocNo ?? string.Empty, DbType.String);
+
+                // opn and ip
+                prm.Add("@opn_by", p.opn_by ?? string.Empty, DbType.String);
+                prm.Add("@IP", p.IP ?? string.Empty, DbType.String);
+
+                // default output param
+                prm.Add("@msg", dbType: DbType.String, size: 4000, direction: ParameterDirection.Output);
+
+                // many SP parameters exist; ensure all required ones are present above.
+                using (var con = _dapperContext.CreateConnection())
                 {
-                    await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
+                    await con.ExecuteAsync(query, prm, commandType: CommandType.StoredProcedure);
                 }
 
-                // read output message (optional logging)
-                var resultMsg = parameters.Get<string>("@msg");
-                // if you have logger: _logger.LogInformation("sp_Insert_Update_prtymast msg: {msg}", resultMsg);
-                Console.WriteLine($"sp_Insert_Update_prtymast returned msg: {resultMsg}");
+                var result = prm.Get<string>("@msg");
+                // return sp's msg (e.g. new CODE or error code sent by SP)
+                return result;
             }
             catch (Exception ex)
             {
-                // keep throwing up (controller will handle) or log as required
-                throw;
+                // recommended: use ILogger in real app. Here we wrap and rethrow for controller to handle.
+                throw new Exception("Failed to save Party Master (SaveFullAsync). See inner exception.", ex);
             }
         }
-
-
-        private async Task<Int64> GeneratePartyMasterCode()
+        // Helper - generate next CODE (you said you have this before)
+        private async Task<long> GeneratePartyMasterCode()
         {
-            const string query = "select Top 1 CODE from prtymast order by CODE desc";
-
-            using (var conn = _dapperContext.CreateConnection())
+            // placeholder: implement your logic to fetch max(CODE) + 1 or sequence
+            using (var con = _dapperContext.CreateConnection())
             {
-                var lastId = await conn.ExecuteScalarAsync<long?>(query);
-                return (lastId ?? 0) + 1;
+                var sql = "SELECT ISNULL(MAX(CODE),0) + 1 FROM dbo.prtymast";
+                var next = await con.ExecuteScalarAsync<long>(sql);
+                return next;
             }
         }
+
+        // Helper parsing methods: convert string to long or return 0/dbnull safe value
+        private long ParseLongOrDbNull(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return 0;
+            return long.TryParse(value, out var v) ? v : 0;
+        }
+
+        private long TryLong(string v)
+        {
+            if (long.TryParse(v, out var x))
+                return x;
+
+            return 0;
+        }
+
+
+
+
+        //private async Task<Int64> GeneratePartyMasterCode()
+        //{
+        //    const string query = "select Top 1 CODE from prtymast order by CODE desc";
+
+        //    using (var conn = _dapperContext.CreateConnection())
+        //    {
+        //        var lastId = await conn.ExecuteScalarAsync<long?>(query);
+        //        return (lastId ?? 0) + 1;
+        //    }
+        //}
 
 
     }

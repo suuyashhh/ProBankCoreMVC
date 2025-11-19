@@ -99,14 +99,14 @@ namespace ProBankCoreMVC.Controllers
         }
 
         [HttpGet("PhoneNo")]
-        public async Task<ActionResult<bool>> PhoneNo([FromQuery] string phone1)
+        public async Task<ActionResult<bool>> PhoneNo([FromQuery] string PhoneNo)
         {
-            if (string.IsNullOrWhiteSpace(phone1))
+            if (string.IsNullOrWhiteSpace(PhoneNo))
                 return BadRequest("PhoneNo is required.");
 
             try
             {
-                var result = await _validationService.PhoneNo(phone1);
+                var result = await _validationService.PhoneNo(PhoneNo);
                 var data = new
                 {
                     exist = result

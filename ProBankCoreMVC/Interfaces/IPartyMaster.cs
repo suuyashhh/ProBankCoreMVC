@@ -4,6 +4,6 @@ namespace ProBankCoreMVC.Interfaces
 {
     public interface IPartyMaster
     {
-        Task save(DTOPartyMaster partymaster);
+        Task<string> Save(DTOPartyMaster p);
     }
 }

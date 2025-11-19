@@ -27,7 +27,7 @@ namespace ProBankCoreMVC.Controllers
                 {
                     return BadRequest();
                 }
-                var createdProperty = _partyMaster.save(partymaster);
+                var createdProperty = _partyMaster.Save(partymaster);
                 var result = new
                 {
                     data = partymaster,
