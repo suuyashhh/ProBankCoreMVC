@@ -66,8 +66,15 @@ namespace ProBankCoreMVC.Repositries
         public async Task<IEnumerable<DTOTalukaMaster>> GetAll()
         {
             const string query = @"
-                SELECT Code, Country_Code, Entry_Date, name, mname, State_Code
-                FROM talkmast
+                 select 
+                        t.Code, t.Name, t.Dist_code, t.Country_Code, t.State_Code , d.Name AS District_Name , s.Name AS State_Name, c.Name AS Country_Name
+                        from talkmast AS t
+                        JOIN CountryMast AS c 
+                        ON c.Code = t.Country_Code
+                        JOIN StateMast AS s
+                        ON s.Code = t.State_Code AND s.Country_Code = t.Country_Code
+                        JOIN DistrictMast AS d
+                        ON d.Code=t.Dist_code AND d.Country_Code = t.Country_Code AND d.State_Code = t.State_Code
                 ORDER BY Code DESC";
 
             using (var conn = _dapperContext.CreateConnection())
