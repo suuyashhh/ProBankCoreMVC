@@ -31,6 +31,22 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
+        [HttpGet("GetCustomerById")]
+        public async Task<ActionResult<DTOPartyMaster>> GetCustomerById(int custCode)
+        {
+            try
+            {
+                var customer = await _partyMaster.GetCustomerById(custCode);
+                if (customer == null) return NotFound();
+                return Ok(customer);
+            }
+            catch (Exception ex)
+            {
+                // log ex
+                return StatusCode(500, "Failed to load customer");
+            }
+        }
+
 
         [HttpPost]
         [Route("save")]

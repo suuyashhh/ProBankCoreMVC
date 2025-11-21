@@ -48,28 +48,86 @@ namespace ProBankCoreMVC.Repositries
         public async Task<DTOPartyMaster> GetCustomerById(int Cust_Code)
         {
             var query = @"
-  select AcType,name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
+        SELECT CODE,AcType,name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
   Area_code,Area,Chk_SameAddress AS chkSameadd,CorADDR1,CorADDR2,CorADDR3,CorPincCode AS CorPIN,Cor_NationalityCode,Cor_NATIONALITY,Cor_Statecode,Cor_State,Cor_DistrictCode AS Cor_DistCode,Cor_District,Cor_Talukacode,
   Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,zonecode,Send_sms,AGE,birthdate,SEX,OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,Ref_STDIR,
   AdharNo,voteridno,passportno,passexpdate,passauth,otherid,Driving_License,Driving_License_ExpDate,rationno,FATHERNAME,officename,OFFICEADDR1,OFFICEADDR2,
   OFFICEADDR3,OFFICEPIN,OFFICEPHONE,OFFICEPHONE1,EMAIL_ID,Name_Bneficiary,AccountNo_Bneficiary,IFSCODE_Bneficiary,BankName_Bneficiary,BrName_Bneficiary,COMPREGNO,
   COMPREGDT,COMPBRANCH,COMPNATURE,COMPPAIDCAPT,COMPTURNOVER,COMPNETWORTH,propname1 AS Propritor1,propname2 AS Propritor2,Cast,Religion AS Religon,KycAddrProof,KycAddrProof_Code,KycIdProof,
-  KycIdProof_Code,opn_by from prtymast";
+  KycIdProof_Code,opn_by
+        FROM prtymast
+        WHERE CODE = @CustCode;
+    ";
 
             try
             {
-                using(var con = _dapperContext.CreateConnection())
+                using (var con = _dapperContext.CreateConnection())
                 {
-                    var result = await con.QueryFirstOrDefaultAsync<DTOPartyMaster>(query, new {CustCode=Cust_Code});
-                    return result;
+                    var customer = await con.QueryFirstOrDefaultAsync<DTOPartyMaster>(query, new { CustCode = Cust_Code });
+
+                    if (customer == null)
+                    {
+                        return null;
+                    }
+
+                    customer.Pictures = new List<DTOUploadPhotoSign>();
+
+                    var photoSql = @"
+                SELECT ID, code1, brnc_code, code2, srno, flag, Scan_By, Scan_Date, Authorise_By, Authorise_Date,
+                       Party_Code, Shr_code1, Shr_code2, Picture, Entry_Date, Description, Doc_No, Picture_Description
+                FROM picture
+                WHERE Party_Code = @PartyCode
+                ORDER BY srno;
+            ";
+
+                    using (var pcon = _photodapperContext.CreateConnection())
+                    {
+                        var photos = await pcon.QueryAsync(photoSql, new { PartyCode = Cust_Code });
+
+                        foreach (var row in photos)
+                        {
+                            byte[]? pictureBytes = null;
+                            try
+                            {
+                                var dict = (IDictionary<string, object?>)row as IDictionary<string, object?>;
+                                if (dict != null && dict.ContainsKey("Picture") && dict["Picture"] is byte[] b)
+                                    pictureBytes = b;
+                                else if (row.Picture is byte[] bb)
+                                    pictureBytes = bb;
+                            }
+                            catch
+                            {
+                                try { pictureBytes = (byte[])row.Picture; } catch { pictureBytes = null; }
+                            }
+
+                            string? pictureBase64 = null;
+                            if (pictureBytes != null && pictureBytes.Length > 0)
+                            {
+                                pictureBase64 = "data:image/jpeg;base64," + Convert.ToBase64String(pictureBytes);
+                            }
+
+                            var dto = new DTOUploadPhotoSign
+                            {
+                                srno = row.srno != null ? (int?)Convert.ToInt32(row.srno) : null,
+                                Scan_By = row.Scan_By != null ? (int?)Convert.ToInt32(row.Scan_By) : null,
+                                Party_Code = row.Party_Code != null ? (int?)Convert.ToInt32(row.Party_Code) : null,
+                                flag = row.flag != null ? row.flag.ToString() : null,
+                                Picture = pictureBase64
+                            };
+
+                            customer.Pictures.Add(dto);
+                        }
+                    }
+
+                    return customer;
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                throw;
-
+                throw new Exception($"Failed to load customer (CODE={Cust_Code}). See inner exception.", ex);
             }
         }
+
         public async Task<string> Save(DTOPartyMaster p)
         {
             if (p == null) throw new ArgumentNullException(nameof(p));
