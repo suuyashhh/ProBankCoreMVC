@@ -20,7 +20,7 @@ namespace ProBankCoreMVC.Controllers
         {
             try
             {
-                var result = await _areaMaster.GetAreaById(countryCode, stateCode, distCode, talukaCode, cityCode);
+                var result = await _areaMaster.GetAreaById(countryCode,stateCode, distCode, talukaCode,cityCode);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -4,8 +4,9 @@ namespace Models
 {
     public class DTOCountryMaster
     {
-        public long TRN_NO { get; set; }
-        public string COUNTRY_NAME { get; set; } = string.Empty;
-        public DateTime DATE { get; set; }
+        public long Code { get; set; }
+        public string Name { get; set; }
+        public DateTime Entry_Date { get; set; }
+
     }
 }

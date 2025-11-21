@@ -8,10 +8,14 @@ namespace Models
 {
     public class DTOTalukaMaster
     {
-        public int COUNTRY_CODE { get; set; }
-        public int STATE_CODE { get; set; }
-        public int DIST_CODE { get; set; }
-        public int TALUKA_CODE { get; set; }
-        public string TALUKA_NAME { get; set; }
+        public int Code { get; set; }
+        public int Dist_code { get; set; }
+        public string name { get; set; }
+        public int State_Code { get; set; }
+        public string Country_Name { get; set; }
+        public string State_Name { get; set; }
+        public string District_Name { get; set; }
+        public string mname { get; set; }
+        public int Country_Code { get; set; }
     }
 }

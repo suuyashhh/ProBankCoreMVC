@@ -38,6 +38,8 @@ builder.Services.AddScoped<IAreaMaster, AreaMasterRepository>();
 builder.Services.AddScoped<ICastMaster, CastMasterRepository>();
 builder.Services.AddScoped<IReligionMaster, ReligionMasterRepository>();
 builder.Services.AddScoped<IOccupationMaster, OccupationMasterRepository>();
+builder.Services.AddScoped<IValidationService, ValidationServiceRepository>();
+builder.Services.AddScoped<IPartyMaster, PartyMasterRepository>();
 
 builder.Services.AddScoped<IDireMast, DireMastRepository>();
 builder.Services.AddScoped<IStaffMaster, StaffMasterRepository>();
@@ -46,6 +48,11 @@ builder.Services.AddScoped<IKycIdMaster, KycIdMasterRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
+);
+
+builder.Services.AddSingleton<PhotoDapperContext>();
+builder.Services.AddDbContext<ProBankCoreMVCDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("connPhotoSign"))
 );
 
 builder.Services.AddSingleton<DapperContext>();
