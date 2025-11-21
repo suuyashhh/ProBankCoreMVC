@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Models;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
+using static Models.DTOPartyMaster;
 
 namespace ProBankCoreMVC.Repositries
 {
@@ -13,32 +14,62 @@ namespace ProBankCoreMVC.Repositries
         private readonly DapperContext _dapperContext;
         private readonly PhotoDapperContext _photodapperContext;
 
-        public PartyMasterRepository(DapperContext dapperContext,PhotoDapperContext photoDapperContext)
+        public PartyMasterRepository(DapperContext dapperContext, PhotoDapperContext photoDapperContext)
         {
             _dapperContext = dapperContext;
             _photodapperContext = photoDapperContext;
         }
 
-        //public async Task save(DTOPartyMaster partymaster)
-        //{
-        //    try
-        //    {
-        //        var query = "sp_Insert_Update_prtymast";
-        //        Int64 newId = await GeneratePartyMasterCode();
-        //        var parameters = new DynamicParameters();
-        //        parameters.Add("@CODE", newId);
 
-        //        using (var connection = _dapperContext.CreateConnection())
-        //        {
-        //            await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+        public async Task<List<DTOPartyMaster.CustomerSummary>> GetCustomers(int branchCode, string? search = null)
+        {
+            search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
+            var query = @"
+                        SELECT CODE, brnc_Code AS brnc_code, name
+                        FROM prtymast
+                        WHERE brnc_Code = @BranchCode
+                          AND (
+                                @Search IS NULL                                
+                                OR (TRY_CAST(@Search AS BIGINT) IS NOT NULL AND CODE = TRY_CAST(@Search AS BIGINT))
+                                OR (TRY_CAST(@Search AS BIGINT) IS NULL AND UPPER(name) LIKE CONCAT('%', UPPER(@Search), '%'))
+                              )
+                        ORDER BY name;
+
+";
+
+            using (var con = _dapperContext.CreateConnection())
+            {
+                var result = await con.QueryAsync<DTOPartyMaster.CustomerSummary>(query, new { BranchCode = branchCode, Search = search });
+                return result.AsList();
+            }
+        }
+
+        public async Task<DTOPartyMaster> GetCustomerById(int Cust_Code)
+        {
+            var query = @"
+  select AcType,name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
+  Area_code,Area,Chk_SameAddress AS chkSameadd,CorADDR1,CorADDR2,CorADDR3,CorPincCode AS CorPIN,Cor_NationalityCode,Cor_NATIONALITY,Cor_Statecode,Cor_State,Cor_DistrictCode AS Cor_DistCode,Cor_District,Cor_Talukacode,
+  Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,zonecode,Send_sms,AGE,birthdate,SEX,OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,Ref_STDIR,
+  AdharNo,voteridno,passportno,passexpdate,passauth,otherid,Driving_License,Driving_License_ExpDate,rationno,FATHERNAME,officename,OFFICEADDR1,OFFICEADDR2,
+  OFFICEADDR3,OFFICEPIN,OFFICEPHONE,OFFICEPHONE1,EMAIL_ID,Name_Bneficiary,AccountNo_Bneficiary,IFSCODE_Bneficiary,BankName_Bneficiary,BrName_Bneficiary,COMPREGNO,
+  COMPREGDT,COMPBRANCH,COMPNATURE,COMPPAIDCAPT,COMPTURNOVER,COMPNETWORTH,propname1 AS Propritor1,propname2 AS Propritor2,Cast,Religion AS Religon,KycAddrProof,KycAddrProof_Code,KycIdProof,
+  KycIdProof_Code,opn_by from prtymast";
+
+            try
+            {
+                using(var con = _dapperContext.CreateConnection())
+                {
+                    var result = await con.QueryFirstOrDefaultAsync<DTOPartyMaster>(query, new {CustCode=Cust_Code});
+                    return result;
+                }
+            }
+            catch (Exception ex) 
+            {
+                throw;
+
+            }
+        }
         public async Task<string> Save(DTOPartyMaster p)
         {
             if (p == null) throw new ArgumentNullException(nameof(p));
@@ -109,7 +140,7 @@ namespace ProBankCoreMVC.Repositries
                 prm.Add("@Cor_Citycode", p.Cor_Citycode ?? 0, DbType.Decimal);
                 prm.Add("@Cor_City", p.Cor_City ?? string.Empty, DbType.String);
                 prm.Add("@Cor_Area_code", p.Cor_Area_code ?? 0, DbType.Decimal);
-                prm.Add("@Cor_Area", p.Cor_Area  ?? string.Empty, DbType.String);
+                prm.Add("@Cor_Area", p.Cor_Area ?? string.Empty, DbType.String);
 
                 // Phone / zone / sms
                 prm.Add("@PHONE", p.PHONE ?? string.Empty, DbType.String);
@@ -275,7 +306,7 @@ namespace ProBankCoreMVC.Repositries
                 // recommended: use ILogger in real app. Here we wrap and rethrow for controller to handle.
                 throw new Exception("Failed to save Party Master (SaveFullAsync). See inner exception.", ex);
             }
-         }
+        }
         // Helper - generate next CODE (you said you have this before)
         private async Task<long> GeneratePartyMasterCode()
         {

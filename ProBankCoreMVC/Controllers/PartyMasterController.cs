@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
 using ProBankCoreMVC.Interfaces;
+using static Models.DTOPartyMaster;
 
 namespace ProBankCoreMVC.Controllers
 {
@@ -13,6 +14,21 @@ namespace ProBankCoreMVC.Controllers
         public PartyMasterController(IPartyMaster partyMaster)
         {
             _partyMaster = partyMaster;
+        }
+
+        [HttpGet("GetCustomers")]
+        public async Task<ActionResult<List<DTOPartyMaster.CustomerSummary>>> GetCustomers(int branchCode, string? search = null)
+        {
+            try
+            {
+                var result = await _partyMaster.GetCustomers(branchCode, search);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                // TODO: log ex properly
+                return StatusCode(500, "Failed to load customers");
+            }
         }
 
 
