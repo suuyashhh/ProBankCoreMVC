@@ -11,10 +11,12 @@ namespace ProBankCoreMVC.Repositries
     public class PartyMasterRepository : IPartyMaster
     {
         private readonly DapperContext _dapperContext;
+        private readonly PhotoDapperContext _photodapperContext;
 
-        public PartyMasterRepository(DapperContext dapperContext)
+        public PartyMasterRepository(DapperContext dapperContext,PhotoDapperContext photoDapperContext)
         {
             _dapperContext = dapperContext;
+            _photodapperContext = photoDapperContext;
         }
 
         //public async Task save(DTOPartyMaster partymaster)
@@ -44,6 +46,7 @@ namespace ProBankCoreMVC.Repositries
             try
             {
                 var query = "sp_Insert_Update_prtymast";
+                var photoquery = "sp_Upload_Photo_and_Sign";
 
                 // Generate new CODE exactly as you did before (used for insert)
                 long newCode = await GeneratePartyMasterCode();
@@ -196,6 +199,73 @@ namespace ProBankCoreMVC.Repositries
                     await con.ExecuteAsync(query, prm, commandType: CommandType.StoredProcedure);
                 }
 
+
+                // ensure Pictures safe to iterate
+                foreach (var item in p.Pictures ?? Enumerable.Empty<DTOUploadPhotoSign>())
+                {
+                    // skip empty picture entries
+                    if (string.IsNullOrWhiteSpace(item.Picture))
+                        continue;
+
+                    // Normalize base64: remove data URI prefix if present and strip whitespace/newlines
+                    var raw = item.Picture;
+                    var commaIdx = raw.IndexOf(',');
+                    if (commaIdx >= 0) raw = raw.Substring(commaIdx + 1);
+                    raw = raw.Replace("\r", "").Replace("\n", "").Trim();
+
+                    byte[] photoBytes;
+                    try
+                    {
+                        photoBytes = Convert.FromBase64String(raw);
+                    }
+                    catch (FormatException)
+                    {
+                        // either skip invalid images or throw with a useful message.
+                        // Here I throw so caller knows which picture failed.
+                        throw new Exception($"Invalid base64 image for picture srno={item.srno ?? 0}");
+                    }
+
+                    var photoprm = new DynamicParameters();
+
+                    photoprm.Add("@flag1", 1, DbType.Int32);
+
+                    // flag may be string in your DTO — coerce to int safely (adjust default as needed)
+                    int flagValue = 0;
+                    if (item.flag != null)
+                    {
+                        if (!int.TryParse(item.flag.ToString(), out flagValue))
+                        {
+                            // if your SP expects a string flag, change DbType and pass string instead.
+                            // For now we coerce to int (fallback 0)
+                            flagValue = 0;
+                        }
+                    }
+                    photoprm.Add("@flag", item.flag);
+
+                    photoprm.Add("@Party_Code", newCode, DbType.Int64);
+
+                    // IMPORTANT: pass byte[] as binary, with explicit size to ensure Dapper/SQL treats it as binary
+                    photoprm.Add("@Picture", photoBytes, DbType.Binary, ParameterDirection.Input, photoBytes.Length);
+
+                    // other params (use correct types)
+                    photoprm.Add("@Code1", 0, DbType.Int32);
+                    photoprm.Add("@brnc_code", p.brnc_code, DbType.Decimal);
+                    photoprm.Add("@code2", 0, DbType.Int32);
+                    photoprm.Add("@srno", 1, DbType.Int32);
+                    photoprm.Add("@scan_by", item.Scan_By ?? 0, DbType.Int32);
+                    photoprm.Add("@Shr_code1", 0, DbType.Int32);
+                    photoprm.Add("@shr_code2", 0, DbType.Int32);
+                    photoprm.Add("@Doc_No", 0, DbType.Int32);
+                    photoprm.Add("@Description", string.Empty, DbType.String);
+                    photoprm.Add("@Msg", dbType: DbType.String, size: 4000, direction: ParameterDirection.Output);
+
+                    using (var con = _photodapperContext.CreateConnection())
+                    {
+                        await con.ExecuteAsync(photoquery, photoprm, commandType: CommandType.StoredProcedure);
+                    }
+                }
+
+
                 var result = prm.Get<string>("@msg");
                 // return sp's msg (e.g. new CODE or error code sent by SP)
                 return result;
@@ -205,7 +275,7 @@ namespace ProBankCoreMVC.Repositries
                 // recommended: use ILogger in real app. Here we wrap and rethrow for controller to handle.
                 throw new Exception("Failed to save Party Master (SaveFullAsync). See inner exception.", ex);
             }
-        }
+         }
         // Helper - generate next CODE (you said you have this before)
         private async Task<long> GeneratePartyMasterCode()
         {

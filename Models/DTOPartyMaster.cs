@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Reflection;
 
 namespace Models
 {
@@ -179,6 +181,10 @@ namespace Models
 
         public string? OldID { get; set; }
         public string? BrCustNo { get; set; }
+        public List<DTOUploadPhotoSign> Pictures { get; set; } = new List<DTOUploadPhotoSign>();
+
+
+
 
     }
 }
