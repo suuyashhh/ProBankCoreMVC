@@ -184,6 +184,12 @@ namespace Models
         public List<DTOUploadPhotoSign> Pictures { get; set; } = new List<DTOUploadPhotoSign>();
 
 
+        public class CustomerSummary
+        {
+            public long CODE { get; set; }
+            public long? brnc_code { get; set; }   // or brnc_Code if you prefer
+            public string? name { get; set; }
+        }
 
 
     }
