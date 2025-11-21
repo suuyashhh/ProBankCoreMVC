@@ -50,6 +50,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 );
 
+builder.Services.AddSingleton<PhotoDapperContext>();
+builder.Services.AddDbContext<ProBankCoreMVCDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("connPhotoSign"))
+);
+
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddDbContext<ProBankCoreMVCDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("connString"))

@@ -107,22 +107,27 @@ namespace ProBankCoreMVC.Repositries
             const string query = @"
                 UPDATE DistrictMast
                 SET Name = @Name,
-                    Entry_Date = @Entry_Date,
-                    State_Code = @State_Code,
-                    Country_Code = @Country_Code
-                WHERE Code = @Code";
+                    Entry_Date = @Entry_Date
+                WHERE Code = @Code AND Country_Code = @Country_Code AND State_Code = @State_Code ";
 
-
-            using (var conn = _dapperContext.CreateConnection())
+            try
             {
-                await conn.ExecuteAsync(query, new
+                using (var conn = _dapperContext.CreateConnection())
                 {
-                    district.Name,
-                    Entry_Date = DateTime.Now,
-                    State_Code = district.State_Code,
-                    Country_Code = district.Country_Code,
-                    district.Code
-                });
+                    await conn.ExecuteAsync(query, new
+                    {
+                        district.Name,
+                        Entry_Date = DateTime.Now,
+                        State_Code = district.State_Code,
+                        Country_Code = district.Country_Code,
+                        district.Code
+                    });
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
