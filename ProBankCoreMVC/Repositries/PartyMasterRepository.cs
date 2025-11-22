@@ -25,25 +25,42 @@ namespace ProBankCoreMVC.Repositries
         {
             search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-            var query = @"
-                        SELECT CODE, brnc_Code AS brnc_code, name
-                        FROM prtymast
-                        WHERE brnc_Code = @BranchCode
-                          AND (
-                                @Search IS NULL                                
-                                OR (TRY_CAST(@Search AS BIGINT) IS NOT NULL AND CODE = TRY_CAST(@Search AS BIGINT))
-                                OR (TRY_CAST(@Search AS BIGINT) IS NULL AND UPPER(name) LIKE CONCAT('%', UPPER(@Search), '%'))
-                              )
-                        ORDER BY name;
+            string query;
 
-";
+            if (search == null)
+            {
+                query = @"
+            SELECT TOP (10) CODE, brnc_Code AS brnc_code, name
+            FROM prtymast
+            WHERE brnc_Code = @BranchCode
+            ORDER BY name;
+        ";
+            }
+            else
+            {
+                query = @"
+            SELECT CODE, brnc_Code AS brnc_code, name
+            FROM prtymast
+            WHERE brnc_Code = @BranchCode
+              AND (
+                    (TRY_CAST(@Search AS BIGINT) IS NOT NULL AND CODE = TRY_CAST(@Search AS BIGINT))
+                    OR (TRY_CAST(@Search AS BIGINT) IS NULL AND UPPER(name) LIKE CONCAT('%', UPPER(@Search), '%'))
+                  )
+            ORDER BY name;
+        ";
+            }
 
             using (var con = _dapperContext.CreateConnection())
             {
-                var result = await con.QueryAsync<DTOPartyMaster.CustomerSummary>(query, new { BranchCode = branchCode, Search = search });
+                var result = await con.QueryAsync<DTOPartyMaster.CustomerSummary>(
+                    query,
+                    new { BranchCode = branchCode, Search = search }
+                );
+
                 return result.AsList();
             }
         }
+
 
         public async Task<DTOPartyMaster> GetCustomerById(int Cust_Code)
         {
