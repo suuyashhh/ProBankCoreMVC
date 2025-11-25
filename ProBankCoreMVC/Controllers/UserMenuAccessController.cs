@@ -77,5 +77,22 @@ namespace ProBankCoreMVC.Controllers
                 return StatusCode(500, $"Error while saving user menu access: {ex.Message}");
             }
         }
+                
+        [HttpPost("MultipleGradeSave")]
+        public async Task<IActionResult> MultipleGradeSave([FromBody] DTOUserMenuAccessMultiple model)
+        {
+            if (model == null || model.SelectedUserGradeList == null || !model.SelectedUserGradeList.Any())
+                return BadRequest("Invalid request.");
+
+            try
+            {
+                await _userMenuAccess.SaveMultipleUserMenuAccessAsync(model);
+                return Ok(new { message = "User menu access saved successfully for selected grades." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while saving user menu access for multiple grades: {ex.Message}");
+            }
+        }
     }
 }

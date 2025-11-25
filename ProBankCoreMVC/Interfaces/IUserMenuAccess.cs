@@ -11,5 +11,6 @@ namespace ProBankCoreMVC.Interfaces
         Task<IEnumerable<DTOMenuMasterItem>> GetMenuMasterAsync(int programeId);
         Task<IEnumerable<long>> GetSelectedMenuIdsAsync(long userGrad, int programeId);
         Task SaveUserMenuAccessAsync(DTOUserMenuAccess model);
+        Task SaveMultipleUserMenuAccessAsync(DTOUserMenuAccessMultiple model);
     }
 }

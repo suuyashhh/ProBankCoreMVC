@@ -129,5 +129,76 @@ namespace ProBankCoreMVC.Repositries
                 }
             }
         }
+
+        // ---------- MULTIPLE GRADE SAVE ----------
+        public async Task SaveMultipleUserMenuAccessAsync(DTOUserMenuAccessMultiple model)
+        {
+            // If nothing selected, nothing to do
+            var selectedSet = new HashSet<long>(model.SelectedMenuIds ?? Enumerable.Empty<long>());
+            if (!selectedSet.Any())
+                return;
+
+            using (var conn = _dapperContext.CreateConnection())
+            {
+                conn.Open();
+                using (var tran = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // Delete only existing rows for these selected menu IDs
+                        const string deleteQuery = @"
+                    DELETE FROM UserGradeDefaultMenu
+                    WHERE Programe_ID = @ProgrameId 
+                      AND UserGrad = @UserGrad
+                      AND MenuID IN @MenuIds";
+
+                        // Insert only selected menu IDs with Show_YN = 'Y'
+                        const string insertQuery = @"
+                    INSERT INTO UserGradeDefaultMenu (UserGrad, Programe_ID, MenuID, Show_YN)
+                    VALUES (@UserGrad, @ProgrameId, @MenuId, 'Y')";
+
+                        var selectedMenuIdsArray = selectedSet.ToArray();
+
+                        foreach (var userGrad in model.SelectedUserGradeList)
+                        {
+                            // Remove existing rows for this userGrad + selected menu IDs
+                            await conn.ExecuteAsync(
+                                deleteQuery,
+                                new
+                                {
+                                    ProgrameId = model.ProgrameId,
+                                    UserGrad = userGrad,
+                                    MenuIds = selectedMenuIdsArray
+                                },
+                                transaction: tran
+                            );
+
+                            // Insert only selected menu IDs as checked (Show_YN = 'Y')
+                            foreach (var menuId in selectedMenuIdsArray)
+                            {
+                                await conn.ExecuteAsync(
+                                    insertQuery,
+                                    new
+                                    {
+                                        UserGrad = userGrad,
+                                        ProgrameId = model.ProgrameId,
+                                        MenuId = menuId
+                                    },
+                                    transaction: tran
+                                );
+                            }
+                        }
+
+                        tran.Commit();
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
     }
 }

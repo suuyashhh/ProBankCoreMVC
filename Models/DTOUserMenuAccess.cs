@@ -1,4 +1,7 @@
 ﻿// Models/DTOMenuMasterItem.cs
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
 namespace Models
 {
     public class DTOUserMenuAccess
@@ -7,11 +10,24 @@ namespace Models
         public int ProgrameId { get; set; } = 1;    // Programe_ID (default 1 like old page)
         public List<long> SelectedMenuIds { get; set; } = new();  // MenuIDs with Show_YN = 'Y'
     }
+    public class DTOUserMenuAccessMultiple
+    {
+        // Matches TS field "selectedusergradelist" (case-insensitive binding),
+        // attribute ensures perfect mapping if you prefer exact name.
+        [JsonPropertyName("selectedusergradelist")]
+        public List<long> SelectedUserGradeList { get; set; } = new();
+
+        public int ProgrameId { get; set; } = 1;
+
+        public List<long> SelectedMenuIds { get; set; } = new();
+    }
+
     public class DTOUserGrade
     {
         public long Code { get; set; }
         public string Name { get; set; }
     }
+
     public class DTOMenuMasterItem
     {
         public long MenuId { get; set; }
