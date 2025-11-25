@@ -1,12 +1,13 @@
 ﻿// ProBankCoreMVC/Repositries/UserMenuAccessRepository.cs
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Dapper;
 using Models;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ProBankCoreMVC.Repositries
 {
@@ -76,48 +77,55 @@ namespace ProBankCoreMVC.Repositries
             using (var conn = _dapperContext.CreateConnection())
             {
                 conn.Open();
+
                 using (var tran = conn.BeginTransaction())
                 {
                     try
                     {
-                        const string deleteQuery = @"
-                            DELETE FROM UserGradeDefaultMenu
-                            WHERE Programe_ID = @ProgrameId 
-                              AND UserGrad = @UserGrad";
-
-                        await conn.ExecuteAsync(deleteQuery,
-                            new { ProgrameId = model.ProgrameId, UserGrad = model.UserGrad },
-                            transaction: tran);
-
                         const string menuQuery = @"
-                            SELECT Menu_ID 
-                            FROM MenuMaster
-                            WHERE Programe_ID = @ProgrameId";
+                    SELECT Menu_ID 
+                    FROM MenuMaster
+                    WHERE Programe_ID = @ProgrameId";
 
-                        var allMenuIds = (await conn.QueryAsync<long>(menuQuery,
+                        var allMenuIds = (await conn.QueryAsync<long>(
+                            menuQuery,
                             new { ProgrameId = model.ProgrameId },
-                            transaction: tran)).ToList();
+                            transaction: tran
+                        )).ToList();
 
                         var selectedSet = new HashSet<long>(model.SelectedMenuIds ?? Enumerable.Empty<long>());
 
-                        const string insertQuery = @"
-                            INSERT INTO UserGradeDefaultMenu (UserGrad, Programe_ID, MenuID, Show_YN)
-                            VALUES (@UserGrad, @ProgrameId, @MenuId, @ShowYN)";
+                        var sb = new StringBuilder();
 
-                        foreach (var menuId in allMenuIds)
+                        sb.AppendLine($@"
+                                         DELETE FROM UserGradeDefaultMenu
+                                         WHERE Programe_ID = {model.ProgrameId}
+                                           AND UserGrad = {model.UserGrad};");
+
+                        if (allMenuIds.Any())
                         {
-                            var showYn = selectedSet.Contains(menuId) ? "Y" : "N";
+                            sb.AppendLine(@"
+                                            INSERT INTO UserGradeDefaultMenu (UserGrad, Programe_ID, MenuID, Show_YN)
+                                            VALUES");
 
-                            await conn.ExecuteAsync(insertQuery,
-                                new
-                                {
-                                    UserGrad = model.UserGrad,
-                                    ProgrameId = model.ProgrameId,
-                                    MenuId = menuId,
-                                    ShowYN = showYn
-                                },
-                                transaction: tran);
+                            for (int i = 0; i < allMenuIds.Count; i++)
+                            {
+                                var menuId = allMenuIds[i];
+                                var showYn = selectedSet.Contains(menuId) ? "Y" : "N";
+
+                                sb.AppendFormat("({0}, {1}, {2}, '{3}')",
+                                    model.UserGrad,
+                                    model.ProgrameId,
+                                    menuId,
+                                    showYn);
+
+                                sb.AppendLine(i < allMenuIds.Count - 1 ? "," : ";");
+                            }
                         }
+
+                        var finalSql = sb.ToString();
+
+                        await conn.ExecuteAsync(finalSql, transaction: tran);
 
                         tran.Commit();
                     }
@@ -129,6 +137,8 @@ namespace ProBankCoreMVC.Repositries
                 }
             }
         }
+
+
 
         // ---------- MULTIPLE GRADE SAVE ----------
         public async Task SaveMultipleUserMenuAccessAsync(DTOUserMenuAccessMultiple model)
