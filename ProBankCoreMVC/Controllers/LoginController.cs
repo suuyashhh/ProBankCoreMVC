@@ -70,7 +70,9 @@ namespace ProBankCoreMVC.Controllers
                     user.NAME,
                     user.ALLOW_BR_SELECTION,
                     user.WORKING_BRANCH,
-                    user.LOGIN_IP
+                    user.LOGIN_IP,
+                    user.DESIGNATION,
+                    user.USER_LAVEL
                 }
             });
         }
