@@ -16,7 +16,9 @@ namespace Models
         public string? LOGIN_IP { get; set; }
         public string? NAME { get; set; }
         public int? WORKING_BRANCH { get; set; }
+        public int? USER_LAVEL { get; set; }
         public string? ALLOW_BR_SELECTION { get; set; }
+        public string? DESIGNATION { get; set; }
     }
 }
 
