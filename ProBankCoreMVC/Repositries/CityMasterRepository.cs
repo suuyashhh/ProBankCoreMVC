@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using Models;
 using ProBankCoreMVC.Contest;
 using ProBankCoreMVC.Interfaces;
@@ -20,7 +21,29 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<IEnumerable<DTOCityMaster>> GetAllCity()
         {
-            const string query = @"SELECT ID, Name FROM CityMast";
+            const string query = @" SELECT 
+                    city.Code        AS CITY_CODE,
+                    city.CountryCode AS COUNTRY_CODE,
+                    city.StateCode   AS STATE_CODE,
+                    city.DistCode    AS DIST_CODE,
+                    city.TalukaCode  AS TALUKA_CODE,
+                    city.Name        AS CITY_NAME,
+                    city.PinCode     AS pin,
+                    c.Name           AS COUNTRY_NAME,
+                    s.Name           AS STATE_NAME,
+                    d.Name           AS DIST_NAME,
+                    t.Name           AS TALUKA_NAME
+                FROM CityMast AS city
+                LEFT JOIN CountryMast  AS c ON c.Code = city.CountryCode
+                LEFT JOIN StateMast    AS s ON s.Code = city.StateCode
+                                           AND s.Country_Code = city.CountryCode
+                LEFT JOIN DistrictMast AS d ON d.Code = city.DistCode
+                                           AND d.Country_Code = city.CountryCode
+                                           AND d.State_Code = city.StateCode
+                LEFT JOIN talkmast     AS t ON t.Code = city.TalukaCode
+                                           AND t.Country_Code = city.CountryCode
+                                           AND t.State_Code   = city.StateCode
+                                           AND t.Dist_Code    = city.DistCode";
             try
             {
                 using var con = _dapperContext.CreateConnection();
@@ -33,7 +56,7 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
-        public async Task<DTOCityMaster> GetCityById(DTOCityMaster objList)
+        public async Task<DTOCityMaster> GetCityById(int country, int state, int dist, int taluka, int code)
         {
             const string query = @"
                SELECT 
@@ -67,14 +90,15 @@ namespace ProBankCoreMVC.Repositries
                     city.Code        = @Code;";
 
             using var conn = _dapperContext.CreateConnection();
-            var result = await conn.QueryFirstOrDefaultAsync<DTOCityMaster>(query, new
-            {
-                CountryCode = objList.COUNTRY_CODE,
-                StateCode = objList.STATE_CODE,
-                DistCode = objList.DIST_CODE,
-                TalukaCode = objList.TALUKA_CODE,
-                Code = objList.CITY_CODE
-            });
+            var result = await conn.QueryFirstOrDefaultAsync<DTOCityMaster>
+                (query, new
+                {
+                    CountryCode = country,
+                    StateCode = state,
+                    DistCode = dist,
+                    TalukaCode = taluka,
+                    Code = code
+                });
 
             return result;
         }
@@ -157,7 +181,7 @@ namespace ProBankCoreMVC.Repositries
             }
         }
 
-        public async Task<bool> Delete(DTOCityMaster objList)
+        public async Task<DTOCityMaster> Delete(int country, int state, int dist, int taluka, int code)
         {
             const string query = @"
                 DELETE FROM CityMast
@@ -170,16 +194,16 @@ namespace ProBankCoreMVC.Repositries
             try
             {
                 using var con = _dapperContext.CreateConnection();
-                var rows = await con.ExecuteAsync(query, new
+                var rows = await con.QueryFirstOrDefaultAsync(query, new
                 {
-                    Code = objList.CITY_CODE,
-                    CountryCode = objList.COUNTRY_CODE,
-                    StateCode = objList.STATE_CODE,
-                    DistCode = objList.DIST_CODE,
-                    TalukaCode = objList.TALUKA_CODE
+                    Code = code ,
+                    CountryCode = country,
+                    StateCode = state,
+                    DistCode = dist,
+                    TalukaCode = taluka
                 });
 
-                return rows > 0;
+                return rows;
             }
             catch
             {

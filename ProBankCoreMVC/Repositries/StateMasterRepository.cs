@@ -108,9 +108,11 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<IEnumerable<DTOStateMaster>> GetState( int countryCode)
         {
-            var query = @"
-            select Code,Name,Country_Code from StateMast
-            WHERE  Country_Code = @Country_Code";
+            var query = @"select s.Code,s.Name,s.Country_Code,c.Name AS Country_Name  
+                        from StateMast AS s
+                        JOIN CountryMast AS c 
+                        ON c.Code = s.Country_Code
+                        WHERE  S.Country_Code = @Country_Code";
 
             try
             {

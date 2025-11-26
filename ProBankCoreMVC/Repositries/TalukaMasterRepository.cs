@@ -86,8 +86,8 @@ namespace ProBankCoreMVC.Repositries
         public async Task Save(DTOTalukaMaster taluka)
         {
             const string query = @"
-                INSERT INTO talkmast (Code, Country_Code, name, mname, Entry_Date)
-                VALUES (@Code, @Country_Code, @Name, @mname, @Entry_Date)";
+                INSERT INTO talkmast (Code, Country_Code,State_Code, Dist_code, name, mname, Entry_Date)
+                VALUES (@Code, @Country_Code, @State_Code, @Dist_code,  @Name, @mname, @Entry_Date)";
 
             long newCode = await GenerateTalukaCode(taluka.Country_Code, taluka.State_Code, taluka.Dist_code);
 
@@ -97,6 +97,8 @@ namespace ProBankCoreMVC.Repositries
                 {
                     Code = newCode,
                     Country_Code = taluka.Country_Code,
+                    State_Code = taluka.State_Code,
+                    Dist_code = taluka.Dist_code,
                     mname = taluka.mname,
                     name = taluka.name,
                     Entry_Date = DateTime.Now

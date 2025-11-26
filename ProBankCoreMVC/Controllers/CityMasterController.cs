@@ -23,20 +23,21 @@ namespace ProBankCoreMVC.Controllers
                 var result = await _cityMaster.GetAllCity();
                 return Ok(result);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 throw;
             }
         }
 
-        [HttpPost("GetCityById")]
-        public async Task<IActionResult> GetCityById([FromBody] DTOCityMaster objList)
+        [HttpGet("GetCityById")]
+        public async Task<IActionResult> GetCityById(int country, int state, int dist, int taluka, int code)
         {
             try
             {
-                var citys = await _cityMaster.GetCityById(objList);
-                if (citys == null) return NotFound("City not found.");
-                return Ok(citys);
+
+                var city = await _cityMaster.GetCityById(country, state, dist, taluka, code);
+                if (city == null) return NotFound("City not found.");
+                return Ok(city);
             }
             catch (Exception ex)
             {
@@ -44,12 +45,17 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
+       
+
+
+
 
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOCityMaster objList)
         {
-            if (objList == null || string.IsNullOrWhiteSpace(objList.COUNTRY_NAME))
+            if (objList == null || string.IsNullOrWhiteSpace(objList.CITY_NAME))
                 return BadRequest("City name cannot be empty.");
+
 
             try
             {
@@ -79,11 +85,11 @@ namespace ProBankCoreMVC.Controllers
         }
 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete([FromBody] DTOCityMaster objList)
+        public async Task<IActionResult> Delete(int country, int state, int dist, int taluka, int code)
         {
             try
             {
-                await _cityMaster.Delete(objList);
+                await _cityMaster.Delete(country, state , dist, taluka, code );
                 return Ok(new { message = "city deleted successfully." });
             }
             catch (Exception ex)
