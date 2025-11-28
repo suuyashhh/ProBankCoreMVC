@@ -33,7 +33,7 @@ namespace ProBankCoreMVC.Repositries
             SELECT TOP (10) CODE, brnc_Code AS brnc_code, name
             FROM prtymast
             WHERE brnc_Code = @BranchCode
-            ORDER BY name;
+            ORDER BY code DESC;
         ";
             }
             else
@@ -65,15 +65,27 @@ namespace ProBankCoreMVC.Repositries
         public async Task<DTOPartyMaster> GetCustomerById(int Cust_Code)
         {
             var query = @"
-        SELECT CODE,AcType,name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
-  Area_code,Area,Chk_SameAddress AS chkSameadd,CorADDR1,CorADDR2,CorADDR3,CorPincCode AS CorPIN,Cor_NationalityCode,Cor_NATIONALITY,Cor_Statecode,Cor_State,Cor_DistrictCode AS Cor_DistCode,Cor_District,Cor_Talukacode,
-  Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,zonecode,Send_sms,AGE,birthdate,SEX,OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,Ref_STDIR,
-  AdharNo,voteridno,passportno,passexpdate,passauth,otherid,Driving_License,Driving_License_ExpDate,rationno,FATHERNAME,officename,OFFICEADDR1,OFFICEADDR2,
-  OFFICEADDR3,OFFICEPIN,OFFICEPHONE,OFFICEPHONE1,EMAIL_ID,Name_Bneficiary,AccountNo_Bneficiary,IFSCODE_Bneficiary,BankName_Bneficiary,BrName_Bneficiary,COMPREGNO,
-  COMPREGDT,COMPBRANCH,COMPNATURE,COMPPAIDCAPT,COMPTURNOVER,COMPNETWORTH,propname1 AS Propritor1,propname2 AS Propritor2,Cast,Religion AS Religon,KycAddrProof,KycAddrProof_Code,KycIdProof,
-  KycIdProof_Code,opn_by
-        FROM prtymast
-        WHERE CODE = @CustCode;
+              SELECT P.CODE,AcType,P.name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
+Area_code,Area,Chk_SameAddress AS chkSameadd,CorADDR1,CorADDR2,CorADDR3,CorPincCode AS CorPIN,Cor_NationalityCode,Cor_NATIONALITY,Cor_Statecode,Cor_State,Cor_DistrictCode AS Cor_DistCode,Cor_District,Cor_Talukacode,
+Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,zonecode,Send_sms,AGE,birthdate,SEX,O.name As OCCU_Name, OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,S.name as Ref_STDIR_Name,Ref_STDIR,
+AdharNo,voteridno,passportno,passexpdate,passauth,otherid,Driving_License,Driving_License_ExpDate,rationno,FATHERNAME,officename,OFFICEADDR1,OFFICEADDR2,
+OFFICEADDR3,OFFICEPIN,OFFICEPHONE,OFFICEPHONE1,EMAIL_ID,Name_Bneficiary,AccountNo_Bneficiary,IFSCODE_Bneficiary,BankName_Bneficiary,BrName_Bneficiary,COMPREGNO,
+COMPREGDT,COMPBRANCH,COMPNATURE,COMPPAIDCAPT,COMPTURNOVER,COMPNETWORTH,propname1 AS Propritor1,propname2 AS Propritor2,C.name as Cast_Name,Cast,R.Name as Religon_Name,Religion AS Religon,KycAddrProof,KA.NAME As KycAddrProof_Name,KycAddrProof_Code,KycIdProof,KI.NAME As KycIdProof_Name,
+KycIdProof_Code,opn_by
+      FROM prtymast as P
+	  join ReligionMast as R
+	  on R.code = P.Religion
+	  join castmast as C
+	  on C.code = P.Cast
+	  join occumast as O
+	  on O.code = P.OCCU
+	  join StaffMast as S 
+	  on S.code = P.Ref_STDIR
+	  join KycAddrmast as KA 
+	  on KA.CODE = P.KycAddrProof_Code
+	  join KycIdmast as KI
+	  on KI.CODE = P.KycIdProof_Code
+      WHERE P.CODE = @CustCode;
     ";
 
             try
