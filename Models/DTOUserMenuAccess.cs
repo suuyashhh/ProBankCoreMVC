@@ -32,6 +32,7 @@ namespace Models
     {
         public long MenuId { get; set; }
         public string MenuName { get; set; }
+        public string PageName { get; set; }
 
         public int ProgrameId { get; set; }
         public long MainMenuId { get; set; }
