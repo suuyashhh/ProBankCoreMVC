@@ -39,6 +39,7 @@ namespace ProBankCoreMVC.Repositries
                 SELECT 
                     Menu_ID     AS MenuId,
                     Menu_Name   AS MenuName,
+                    Angular_Page_Path AS PageName,
                     Programe_ID AS ProgrameId,
                     Main_Menu_ID AS MainMenuId,
                     ISNULL(Seq_No1, 0) AS SeqNo1,
