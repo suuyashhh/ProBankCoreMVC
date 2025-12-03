@@ -45,6 +45,10 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
+       
+
+
+
 
 
 
@@ -90,6 +94,7 @@ namespace ProBankCoreMVC.Controllers
             try
             {
                 await _cityMaster.Delete(country, state, dist, taluka, code);
+
                 return Ok(new { message = "city deleted successfully." });
             }
             catch (Exception ex)
