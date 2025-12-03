@@ -50,6 +50,10 @@ namespace ProBankCoreMVC.Controllers
 
 
 
+
+
+
+
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOCityMaster objList)
         {
@@ -89,7 +93,8 @@ namespace ProBankCoreMVC.Controllers
         {
             try
             {
-                await _cityMaster.Delete(country, state , dist, taluka, code );
+                await _cityMaster.Delete(country, state, dist, taluka, code);
+
                 return Ok(new { message = "city deleted successfully." });
             }
             catch (Exception ex)
@@ -113,6 +118,20 @@ namespace ProBankCoreMVC.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+
+        [HttpGet("GetDistrictsByState")]
+        public async Task<IActionResult> GetDistrictsByState(int countryCode, int stateCode)
+        {
+            var data = await _cityMaster.GetDistrictsByState(countryCode, stateCode);
+            return Ok(data);
+        }
+
+        [HttpGet("GetTalukasByDistrict")]
+        public async Task<IActionResult> GetTalukasByDistrict(int countryCode, int stateCode, int distCode)
+        {
+            var data = await _cityMaster.GetTalukasByDistrict(countryCode, stateCode, distCode);
+            return Ok(data);
         }
 
     }

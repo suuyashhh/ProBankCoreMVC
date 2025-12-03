@@ -8,7 +8,8 @@ namespace Models
 {
     public class DTOStaffMaster
     {
-        public int STAFF_CODE { get; set; }
-        public String STAFF_NAME { get; set; }
+        public int code { get; set; }
+        public String name { get; set; }
+        public DateTime Entry_Date {  get; set; }
     }
 }

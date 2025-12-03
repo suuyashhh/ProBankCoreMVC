@@ -196,7 +196,7 @@ namespace ProBankCoreMVC.Repositries
                 using var con = _dapperContext.CreateConnection();
                 var rows = await con.QueryFirstOrDefaultAsync(query, new
                 {
-                    Code = code ,
+                    Code = code,
                     CountryCode = country,
                     StateCode = state,
                     DistCode = dist,
@@ -282,5 +282,70 @@ namespace ProBankCoreMVC.Repositries
 
             return (lastId ?? 0) + 1;
         }
+
+        public async Task<IEnumerable<DTODistrictMaster>> GetDistrictsByState(int countryCode, int stateCode)
+        {
+            const string query = @"
+         SELECT 
+            d.Code         AS code,
+            d.Country_Code AS country_Code,
+            d.State_Code   AS state_Code,
+            d.Name         AS name
+        FROM DistrictMast AS d
+        WHERE d.Country_Code = @CountryCode
+          AND d.State_Code   = @StateCode
+        ORDER BY d.Name;";
+
+            try
+            {
+                using var con = _dapperContext.CreateConnection();
+                var result = await con.QueryAsync<DTODistrictMaster>(query, new
+                {
+                    CountryCode = countryCode,
+                    StateCode = stateCode
+                });
+
+                return result.ToList();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<DTOTalukaMaster>> GetTalukasByDistrict(int countryCode, int stateCode, int distCode)
+        {
+            const string query = @"
+            SELECT 
+            t.Code         AS code,
+            t.Country_Code AS country_Code,
+            t.State_Code   AS state_Code,
+            t.Dist_Code    AS dist_Code,
+            t.Name         AS name
+        FROM talkmast AS t
+        WHERE t.Country_Code = @CountryCode
+          AND t.State_Code   = @StateCode
+          AND t.Dist_Code    = @DistCode
+        ORDER BY t.Name;";
+
+            try
+            {
+                using var con = _dapperContext.CreateConnection();
+                var result = await con.QueryAsync<DTOTalukaMaster>(query, new
+                {
+                    CountryCode = countryCode,
+                    StateCode = stateCode,
+                    DistCode = distCode
+                });
+
+                return result.ToList();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+
     }
 }

@@ -23,6 +23,7 @@ namespace Models
         public string DIST_NAME { get; set; }
         public string TALUKA_NAME { get; set; }
         public string? pin { get; set; }
-        public  DateTime? Entry_Date { get; set; }
+        public DateTime? Entry_Date { get; set; }
+
     }
 }
