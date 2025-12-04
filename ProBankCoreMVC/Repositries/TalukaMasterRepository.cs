@@ -31,7 +31,7 @@ namespace ProBankCoreMVC.Repositries
             {
                 using (var connection = _dapperContext.CreateConnection())
                 {
-                    var result = await connection.QueryFirstOrDefaultAsync<DTOTalukaMaster>(query, new { TalukaCode = talukaCode,DistrictCode=Dist_code,StateCode=State_Code,CountryCode=Country_Code });
+                    var result = await connection.QueryFirstOrDefaultAsync<DTOTalukaMaster>(query, new { TalukaCode = talukaCode, DistrictCode = Dist_code, StateCode = State_Code, CountryCode = Country_Code });
                     return result;
                 }
             }
@@ -51,7 +51,7 @@ namespace ProBankCoreMVC.Repositries
             {
                 using (var connection = _dapperContext.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<DTOTalukaMaster>(query, new { Dist_code = Dist_code, State_Code = State_Code, Country_Code = Country_Code,});
+                    var result = await connection.QueryAsync<DTOTalukaMaster>(query, new { Dist_code = Dist_code, State_Code = State_Code, Country_Code = Country_Code, });
                     return result;
                 }
             }
@@ -86,8 +86,8 @@ namespace ProBankCoreMVC.Repositries
         public async Task Save(DTOTalukaMaster taluka)
         {
             const string query = @"
-                INSERT INTO talkmast (Code, Country_Code, name, mname, Entry_Date)
-                VALUES (@Code, @Country_Code, @Name, @mname, @Entry_Date)";
+                INSERT INTO talkmast (Code, Country_Code,State_Code, Dist_code, name, mname, Entry_Date)
+                VALUES (@Code, @Country_Code, @State_Code, @Dist_code,  @Name, @mname, @Entry_Date)";
 
             long newCode = await GenerateTalukaCode(taluka.Country_Code, taluka.State_Code, taluka.Dist_code);
 
@@ -97,6 +97,8 @@ namespace ProBankCoreMVC.Repositries
                 {
                     Code = newCode,
                     Country_Code = taluka.Country_Code,
+                    State_Code = taluka.State_Code,
+                    Dist_code = taluka.Dist_code,
                     mname = taluka.mname,
                     name = taluka.name,
                     Entry_Date = DateTime.Now
@@ -147,7 +149,7 @@ namespace ProBankCoreMVC.Repositries
 
             using (var conn = _dapperContext.CreateConnection())
             {
-                var lastId = await conn.ExecuteScalarAsync<long?>(query, new { CountryCode= Country_Code, StateCode = State_Code, Distcode= Dist_code });
+                var lastId = await conn.ExecuteScalarAsync<long?>(query, new { CountryCode = Country_Code, StateCode = State_Code, Distcode = Dist_code });
                 return (lastId ?? 0) + 1;
             }
         }

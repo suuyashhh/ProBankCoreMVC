@@ -10,5 +10,6 @@ namespace Models
     {
         public int RELIGION_CODE { get; set; }
         public string RELIGION_NAME { get; set; }
+        public DateTime RELIGION_DATE { get; set;}
     }
 }

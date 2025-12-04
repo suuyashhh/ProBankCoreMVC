@@ -85,6 +85,7 @@ namespace Models
         public DateTime? birthdate { get; set; }
         public string? SEX { get; set; }
         public long? OCCU { get; set; }
+        public string? OCCU_Name { get; set; }
         public long? Family_code { get; set; }
 
         public string? MEMBER_NR { get; set; }
@@ -92,6 +93,7 @@ namespace Models
 
         public string? ST_DIR { get; set; }
         public long? Ref_STDIR { get; set; }
+        public string? Ref_STDIR_Name { get; set; }
 
         // ID/Passport/Voter
         public string? Adhar { get; set; }
@@ -138,13 +140,17 @@ namespace Models
 
         // Religion / Caste
         public long? Cast { get; set; }
+        public string? Cast_Name { get; set; }
         public long? Religon { get; set; }    // spelled as in proc
+        public string? Religon_Name { get; set; }
 
         // KYC
         public bool? KycAddrProof { get; set; }
         public long? KycAddrProof_Code { get; set; }
+        public string? KycAddrProof_Name { get; set; }
         public bool? KycIdProof { get; set; }
         public long? KycIdProof_Code { get; set; }
+        public string? KycIdProof_Name { get; set; }
         public string? KycIdProof_DocNo { get; set; }
         public string? KycAddrProof_DocNo { get; set; }
 
