@@ -8,16 +8,13 @@ using ProBankCoreMVC.Repositries;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Text;
-using static ProBankCoreMVC.Controllers.LoginController;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Shared dictionary to track active sessions
+builder.Configuration.AddEnvironmentVariables();
+
 var userTokenStore = new ConcurrentDictionary<string, string>();
 
-// -------------------------
-// 1️⃣ Services Configuration
-// -------------------------
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling =
@@ -26,7 +23,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Dependency injection
+// DI (your original)
 builder.Services.AddScoped<ILogin, LoginRepository>();
 builder.Services.AddScoped<IBranchMast, BranchMastRepository>();
 builder.Services.AddScoped<ICountryMaster, CountryMasterRepository>();
@@ -41,7 +38,6 @@ builder.Services.AddScoped<IOccupationMaster, OccupationMasterRepository>();
 builder.Services.AddScoped<IValidationService, ValidationServiceRepository>();
 builder.Services.AddScoped<IUserMenuAccess, UserMenuAccessRepository>();
 builder.Services.AddScoped<IPartyMaster, PartyMasterRepository>();
-
 builder.Services.AddScoped<IDireMast, DireMastRepository>();
 builder.Services.AddScoped<IStaffMaster, StaffMasterRepository>();
 builder.Services.AddScoped<IKycAddressMaster, KycAddressMasterRepository>();
@@ -61,51 +57,69 @@ builder.Services.AddDbContext<ProBankCoreMVCDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("connString"))
 );
 
-// Register shared token store (singleton)
 builder.Services.AddSingleton(userTokenStore);
 
-// JWT Authentication
+var angularDev = builder.Configuration["Cors:AngularOriginDev"];
+var angularProd = builder.Configuration["Cors:AngularOriginProd"];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularOnly", policy =>
+    {
+        policy.WithOrigins(angularDev!, angularProd!)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtSettings = builder.Configuration.GetSection("Jwt");
+        var jwt = builder.Configuration.GetSection("Jwt");
+        var key = jwt["Key"];
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidIssuer = jwt["Issuer"],
+            ValidAudience = jwt["Audience"],
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
-            ValidateLifetime = false, // No expiry for now
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
-            )
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
 
-// Enable CORS
-builder.Services.AddCors(policy =>
-{
-    policy.AddPolicy("AllowAll", builder =>
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader());
-});
-
 var app = builder.Build();
 
-// -------------------------
-// 2️⃣ Middleware Pipeline
-// -------------------------
-app.UseDeveloperExceptionPage();
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+app.UseHsts();
+
+app.UseCors("AngularOnly");
 
 app.UseAuthentication();
-app.UseMiddleware<TokenValidationMiddleware>(userTokenStore); // ✅ Single-session middleware
+
+// 🧱 LAYER 1 — IP ALLOW LIST
+app.UseMiddleware<IpAllowListMiddleware>();
+
+// 🧱 LAYER 2 — APP KEY VALIDATION
+app.UseMiddleware<AppKeyValidationMiddleware>();
+
+// 🧱 LAYER 3 — HMAC SIGNATURE VALIDATION
+app.UseMiddleware<HmacValidationMiddleware>();
+
+// 🧱 LAYER 4 — SINGLE SESSION PROTECTOR
+app.UseMiddleware<TokenValidationMiddleware>(userTokenStore);
+
 app.UseAuthorization();
 
 app.MapControllers();

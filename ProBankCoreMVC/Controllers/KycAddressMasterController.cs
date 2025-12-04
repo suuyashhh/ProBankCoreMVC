@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProBankCoreMVC.Interfaces;
 
 namespace ProBankCoreMVC.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class KycAddressMasterController : Controller
     {
         private readonly IKycAddressMaster _kycAddressMaster;
