@@ -127,7 +127,10 @@ namespace ProBankCoreMVC.Controllers
                         user.INI,
                         user.NAME,
                         user.ALLOW_BR_SELECTION,
-                        user.WORKING_BRANCH
+                        user.WORKING_BRANCH,
+                        user.DESIGNATION,
+                        user.USER_LAVEL
+
                     }
                 };
 
