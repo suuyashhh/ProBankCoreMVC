@@ -51,28 +51,15 @@ namespace ProBankCoreMVC.Controllers
                 return StatusCode(500, $"Error while fetching data: {ex.Message}");
             }
         }
-
-        //[HttpGet("GetStaff")]
-        //public async Task<ActionResult> GetStaff(int code)
-        //{
-        //    try
-        //    {
-        //        var Staff = await _staffMaster.GetStaff(code);
-        //        return Ok(Staff);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-        //}
+             
 
         [HttpPost("Save")]
-        public async Task<IActionResult> Save([FromBody] DTOCommanMaster objComman)
+        public async Task<IActionResult> Save(string tblName,  string name)
         {
 
             try
             {
-                await _commanMaster.Save(objComman);
+                await _commanMaster.Save( tblName,  name);
                 return Ok(new { message = " saved successfully." });
             }
             catch (Exception ex)
