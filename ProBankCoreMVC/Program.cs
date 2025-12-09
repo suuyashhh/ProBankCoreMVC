@@ -69,7 +69,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AngularOnly", policy =>
     {
-        policy.WithOrigins(angularDev!, angularProd!)
+        policy.WithOrigins(
+                "http://103.93.97.222:1552",
+                "https://103.93.97.222:1552"
+            )
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
