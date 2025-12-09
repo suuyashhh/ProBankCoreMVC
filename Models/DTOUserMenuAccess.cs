@@ -35,6 +35,7 @@ namespace Models
         public string PageName { get; set; }
 
         public int ProgrameId { get; set; }
+        public int viewId { get; set; }
         public long MainMenuId { get; set; }
 
         public int SeqNo1 { get; set; }
