@@ -18,7 +18,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<IEnumerable<DTOAccountTypeMaster>> GetAllAccountType()
         {
-            var query = @"select  Code, Name, Allow_Mobile_App, Allow_Mobile_App_Trn from Party_AcTypeMast";
+            var query = @"select  Code, Name, Allow_Mobile_App, Allow_Mobile_App_Trn,AdharCard,PanCard,GST  from Party_AcTypeMast";
             try
             {
                 using (var connection = _dapperContext.CreateConnection())
@@ -35,7 +35,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<DTOAccountTypeMaster> GetAccountTypeById(int Code)
         {
-            var query = @"select  Code, Name, Allow_Mobile_App, Allow_Mobile_App_Trn from Party_AcTypeMast where Code = @Code";
+            var query = @"select  Code, Name, Allow_Mobile_App, Allow_Mobile_App_Trn,AdharCard,PanCard,GST from Party_AcTypeMast where Code = @Code";
 
             try
             {
