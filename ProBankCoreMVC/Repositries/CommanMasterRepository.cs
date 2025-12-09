@@ -21,7 +21,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<IEnumerable<DTOCommanMaster>> GetAllMaster(string tableName)
         {
-            const string spName = "SP_Insert2FieldMaster";
+            const string spName = "New_SP_Insert2FieldMaster";
 
             var parameters = new DynamicParameters();
             parameters.Add("@flag", 5);
@@ -56,7 +56,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<DTOCommanMaster> GetCommanMasterById(string tableName, int code)
         {
-            const string spName = "SP_Insert2FieldMaster";
+            const string spName = "New_SP_Insert2FieldMaster";
 
             var parameters = new DynamicParameters();
             parameters.Add("@flag", 3);
@@ -105,7 +105,7 @@ namespace ProBankCoreMVC.Repositries
         //    }
         //}
 
-        public async Task Save(DTOCommanMaster objComman)
+        public async Task Save(string tblName, string name)
         {
             //var query = @"SELECT code,name,Entry_Date  FROM StaffMast";
 
@@ -113,15 +113,15 @@ namespace ProBankCoreMVC.Repositries
             {
 
 
-                var query = "SP_Insert2FieldMaster";
+                var query = "New_SP_Insert2FieldMaster";
                 var parameters = new DynamicParameters();
-                parameters.Add("@flag", objComman.flag);
-                parameters.Add("@TblName", objComman.TblName);
-                parameters.Add("@fld1", objComman.fld1);
-                parameters.Add("@fld2", objComman.fld2);
+                parameters.Add("@flag", 1);
+                parameters.Add("@TblName", tblName);
+                parameters.Add("@fld1", "CODE");
+                parameters.Add("@fld2", "NAME");
                 //parameters.Add("@fld1val",objComman.fld1val);
-                parameters.Add("@fld2val", objComman.fld2val);
-                parameters.Add("@Msg", objComman.Msg);
+                parameters.Add("@fld2val", name);
+                parameters.Add("@Msg", dbType: DbType.String, size: 50, direction: ParameterDirection.Output);
 
 
                 using (var connection = _dapperContext.CreateConnection())
@@ -140,7 +140,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task UpdateCommanMaster(string tableName, int code, string name)
         {
-            const string spName = "SP_Insert2FieldMaster";
+            const string spName = "New_SP_Insert2FieldMaster";
 
             var parameters = new DynamicParameters();
             parameters.Add("@flag", 2);
@@ -173,7 +173,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task DeleteCommanMaster(string tableName, int code)
         {
-            const string spName = "SP_Insert2FieldMaster";
+            const string spName = "New_SP_Insert2FieldMaster";
 
             var parameters = new DynamicParameters();
             parameters.Add("@flag", 4);
