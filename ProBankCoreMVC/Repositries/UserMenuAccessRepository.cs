@@ -20,6 +20,29 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
+        public async Task<object> GetUserImage(string code)
+        {
+            var query = @"
+                          select user_img from UserMast where ini = @Code
+                        ";
+
+            try
+            {
+                using (var con = _dapperContext.CreateConnection()) 
+                {
+                    var result = await con.QuerySingleOrDefaultAsync<DTOUserMenuAccess>(query, new {Code = code});
+                    return new
+                    {
+                        result.user_img
+                    };
+                }
+            }
+            catch (Exception ex) 
+            {
+                throw;
+
+            }
+        }
         public async Task<IEnumerable<DTOUserGrade>> GetUserGradesAsync()
         {
             const string query = @"SELECT Code, Name 
@@ -37,19 +60,35 @@ namespace ProBankCoreMVC.Repositries
         {
             const string query = @"
                 SELECT 
-                    Menu_ID     AS MenuId,
-                    Menu_Name   AS MenuName,
-                    Angular_Page_Path AS PageName,
-                    Programe_ID AS ProgrameId,
-                    Main_Menu_ID AS MainMenuId,
-                    ISNULL(Seq_No1, 0) AS SeqNo1,
-                    ISNULL(Seq_No2, 0) AS SeqNo2,
-                    ISNULL(Seq_No3, 0) AS SeqNo3,
-                    ISNULL(Seq_No4, 0) AS SeqNo4,
-                    ISNULL(Seq_No5, 0) AS SeqNo5
-                FROM MenuMaster
-                WHERE Programe_ID = @ProgrameId
-                ORDER BY Main_Menu_ID, Seq_No1, Seq_No2, Seq_No3, Seq_No4, Seq_No5";
+                    m.Menu_ID AS MenuId,
+                    m.Menu_Name AS MenuName,
+                    m.Angular_Page_Path AS PageName,
+                    m.Programe_ID AS ProgrameId,
+                    m.Main_Menu_ID AS MainMenuId,
+                    ISNULL(m.Seq_No1, 0) AS SeqNo1,
+                    ISNULL(m.Seq_No2, 0) AS SeqNo2,
+                    ISNULL(m.Seq_No3, 0) AS SeqNo3,
+                    ISNULL(m.Seq_No4, 0) AS SeqNo4,
+                    ISNULL(m.Seq_No5, 0) AS SeqNo5,
+
+                    CAST(REPLACE(v.value, 'view=', '') AS INT) AS viewId
+
+                FROM MenuMaster m
+                OUTER APPLY (
+                    SELECT value
+                    FROM STRING_SPLIT(
+                            REPLACE(CAST(m.Page_Name AS NVARCHAR(MAX)), '?', '&'),
+                            '&'
+                         )
+                    WHERE value LIKE 'view=%'
+                ) v
+
+                WHERE m.Programe_ID = @ProgrameId
+
+                ORDER BY 
+                    m.Main_Menu_ID,
+                    m.Seq_No1, m.Seq_No2, m.Seq_No3, m.Seq_No4, m.Seq_No5;
+                ";
 
             using (var conn = _dapperContext.CreateConnection())
             {

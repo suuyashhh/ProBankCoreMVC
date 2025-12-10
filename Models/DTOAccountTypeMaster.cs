@@ -12,5 +12,8 @@ namespace Models
         public string Name { get; set; }
         public string Allow_Mobile_App { get; set; }
         public string Allow_Mobile_App_Trn { get; set; }
+        public string AdharCard { get; set; }
+        public string PanCard { get; set; }
+        public string GST { get; set; }
     }
 }
