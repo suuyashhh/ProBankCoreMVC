@@ -42,6 +42,8 @@ namespace ProBankCoreMVC.Repositries
                     m.Angular_Page_Path AS PageName,
                     m.Programe_ID AS ProgrameId,
                     m.Main_Menu_ID AS MainMenuId,
+                    m.ComponentKey,
+                    m.Title ,
                     ISNULL(m.Seq_No1, 0) AS SeqNo1,
                     ISNULL(m.Seq_No2, 0) AS SeqNo2,
                     ISNULL(m.Seq_No3, 0) AS SeqNo3,

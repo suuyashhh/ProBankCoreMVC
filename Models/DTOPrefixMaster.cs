@@ -11,6 +11,7 @@ namespace Models
         public int Code { get; set; }
 
         public string Prefixtype { get; set; }
+        public string PrefixCategory { get; set; }
 
     }
 }
