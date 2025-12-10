@@ -16,7 +16,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<IEnumerable<DTOPrefixMaster>> GetAllPrefix()
         {
-            var query = @"SELECT Code,Prefixtype From PrefixMast";
+            var query = @"SELECT Code,Prefixtype,PrefixCategory From PrefixMast";
             try
             {
                 using (var connection = _dapperContext.CreateConnection())
@@ -36,7 +36,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task<DTOPrefixMaster> GetPrefixById(int code)
         {
-            var query = @"SELECT Code,Prefixtype From PrefixMast where code = @code";
+            var query = @"SELECT Code,Prefixtype,PrefixCategory From PrefixMast where code = @code";
 
             try
             {
@@ -72,7 +72,7 @@ namespace ProBankCoreMVC.Repositries
 
         public async Task Save(DTOPrefixMaster Prefix)
         {
-            const string query = @"INSERT INTO PrefixMast (Code, PrefixType) VALUES ( @Code, @PrefixType);";
+            const string query = @"INSERT INTO PrefixMast (Code, PrefixType, PrefixCategory) VALUES ( @Code, @PrefixType, @PrefixCategory);";
 
 
             long newCode = await GeneratePrefixCode(Prefix.Code);
@@ -82,14 +82,15 @@ namespace ProBankCoreMVC.Repositries
                 await conn.ExecuteAsync(query, new
                 {
                     Code = newCode,
-                    Prefix.Prefixtype
+                    PrefixType=Prefix.Prefixtype,
+                    PrefixCategory = Prefix.PrefixCategory
                 });
             }
         }
 
         public async Task Update(DTOPrefixMaster Prefix)
         {
-            const string query = @" UPDATE PrefixMast SET Prefixtype = @Prefixtype WHERE Code = @Code";
+            const string query = @" UPDATE PrefixMast SET Prefixtype = @Prefixtype AND PrefixCategory = @PrefixCategory WHERE Code = @Code";
 
             try
             {
@@ -97,8 +98,10 @@ namespace ProBankCoreMVC.Repositries
                 {
                     await conn.ExecuteAsync(query, new
                     {
-                        Prefix.Code,
-                        Prefix.Prefixtype
+                        Code=Prefix.Code,
+                        Prefixtype=Prefix.Prefixtype,
+                        PrefixCategory = Prefix.PrefixCategory
+
                     });
                 }
 

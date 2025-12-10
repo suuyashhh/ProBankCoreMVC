@@ -34,6 +34,8 @@ namespace Models
         public long MenuId { get; set; }
         public string MenuName { get; set; }
         public string PageName { get; set; }
+        public string ComponentKey { get; set; }
+        public string Title { get; set; }
 
         public int ProgrameId { get; set; }
         public int viewId { get; set; }
