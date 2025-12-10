@@ -16,6 +16,17 @@ namespace ProBankCoreMVC.Controllers
             _userMenuAccess = userMenuAccess;
         }
 
+        [HttpGet("GetUserImage/{code}")]
+        public async Task<IActionResult> GetUserImage(string code)
+        {
+            var result = await _userMenuAccess.GetUserImage(code);
+
+            if (result == null)
+                return NotFound(new { message = "Feed image not found" });
+
+            return Ok(result);
+        }
+
         [HttpGet("UserGrades")]
         public async Task<ActionResult> GetUserGrades()
         {

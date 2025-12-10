@@ -20,6 +20,29 @@ namespace ProBankCoreMVC.Repositries
             _dapperContext = dapperContext;
         }
 
+        public async Task<object> GetUserImage(string code)
+        {
+            var query = @"
+                          select user_img from UserMast where ini = @Code
+                        ";
+
+            try
+            {
+                using (var con = _dapperContext.CreateConnection()) 
+                {
+                    var result = await con.QuerySingleOrDefaultAsync<DTOUserMenuAccess>(query, new {Code = code});
+                    return new
+                    {
+                        result.user_img
+                    };
+                }
+            }
+            catch (Exception ex) 
+            {
+                throw;
+
+            }
+        }
         public async Task<IEnumerable<DTOUserGrade>> GetUserGradesAsync()
         {
             const string query = @"SELECT Code, Name 
