@@ -41,11 +41,11 @@ namespace Models
         public String Active_YN { get; set; }
         public String mob_no { get; set; }
         public String auth { get; set; }
-        public DateTime Entry_Date { get; set; }
-        public DateTime Join_date { get; set; }
-        public DateTime Resign_Date { get; set; }
-        public DateTime OTP_ValidTime { get; set; }
-        public DateTime Coll_Start_Date { get; set; }
-        public DateTime Coll_End_Date { get; set; }
+        public DateTime? Entry_Date { get; set; }
+        public DateTime? Join_date { get; set; }
+        public DateTime? Resign_Date { get; set; }
+        public DateTime? OTP_ValidTime { get; set; }
+        public DateTime? Coll_Start_Date { get; set; }
+        public DateTime? Coll_End_Date { get; set; }
     }
 }

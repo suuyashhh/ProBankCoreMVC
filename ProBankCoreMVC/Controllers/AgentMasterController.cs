@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Models;
 using ProBankCoreMVC.Interfaces;
 
 namespace ProBankCoreMVC.Controllers
@@ -26,5 +27,75 @@ namespace ProBankCoreMVC.Controllers
                 throw;
             }
         }
+
+        [HttpGet("GetAgentById")]
+        public async Task<ActionResult> GetAgentById(int ID)
+        {
+            try
+            {
+                var agent = await _agentMaster.GetAgentById(ID);
+
+                if (agent == null)
+                    return NotFound();
+
+                return Ok(agent);
+            }
+            catch (Exception ex)
+            {
+                // log ex if needed
+                return StatusCode(500, $"Error fetching agent: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost("Save")]
+        public async Task<IActionResult> Save([FromBody] DTOAgentMaster Agent)
+        {
+            if (Agent == null || string.IsNullOrWhiteSpace(Agent.NAME))
+                return BadRequest("Agent name cannot be empty.");
+
+            try
+            {
+                await _agentMaster.Save(Agent);
+                return Ok(new { message = "Agent saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while saving Agent: {ex.Message}");
+            }
+        }
+
+        [HttpPut("Update")]
+        public async Task<IActionResult> Update([FromBody] DTOAgentMaster Agent)
+        {
+            if (Agent == null || Agent.ID <= 0)
+                return BadRequest("Invalid Agent ID.");
+
+            try
+            {
+                await _agentMaster.Update(Agent);
+                return Ok(new { message = "Agent updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while updating agent: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> Delete(int ID)
+        {
+            try
+            {
+                await _agentMaster.Delete(ID);
+                return Ok(new { message = "Agent deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error while deleting Agent: {ex.Message}");
+            }
+        }
+
+
     }
 }
