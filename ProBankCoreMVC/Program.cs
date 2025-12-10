@@ -45,7 +45,7 @@ builder.Services.AddScoped<IKycIdMaster, KycIdMasterRepository>();
 builder.Services.AddScoped<IAccountTypeMaster, AccountTypeMasterRepository>();
 builder.Services.AddScoped<IPrefixMaster, PrefixMasterRespository>();
 builder.Services.AddScoped<IAgentMaster, AgentMasterRepository>();
-builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();    
+builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 );
@@ -70,6 +70,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AngularOnly", policy =>
     {
         policy.WithOrigins(
+                "http://localhost:4200", "https://localhost:4200",
                 "http://103.93.97.222:1552",
                 "https://103.93.97.222:1552"
             )
