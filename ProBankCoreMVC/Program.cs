@@ -45,7 +45,8 @@ builder.Services.AddScoped<IKycIdMaster, KycIdMasterRepository>();
 builder.Services.AddScoped<IAccountTypeMaster, AccountTypeMasterRepository>();
 builder.Services.AddScoped<IPrefixMaster, PrefixMasterRespository>();
 builder.Services.AddScoped<IAgentMaster, AgentMasterRepository>();
-builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();
+builder.Services.AddScoped<IThreeFieldMaster, ThreeFieldMasterRepository>();    
+builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();    
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 );
