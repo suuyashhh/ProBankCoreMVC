@@ -117,16 +117,16 @@ app.UseCors("AngularOnly");
 app.UseAuthentication();
 
 // 🧱 LAYER 1 — IP ALLOW LIST
-app.UseMiddleware<IpAllowListMiddleware>();
+//app.UseMiddleware<IpAllowListMiddleware>();
 
 // 🧱 LAYER 2 — APP KEY VALIDATION
-app.UseMiddleware<AppKeyValidationMiddleware>();
+//app.UseMiddleware<AppKeyValidationMiddleware>();
 
 // 🧱 LAYER 3 — HMAC SIGNATURE VALIDATION
-app.UseMiddleware<HmacValidationMiddleware>();
+//app.UseMiddleware<HmacValidationMiddleware>();
 
 // 🧱 LAYER 4 — SINGLE SESSION PROTECTOR
-app.UseMiddleware<TokenValidationMiddleware>(userTokenStore);
+//app.UseMiddleware<TokenValidationMiddleware>(userTokenStore);
 
 app.UseAuthorization();
 
