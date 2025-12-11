@@ -30,7 +30,7 @@ namespace ProBankCoreMVC.Repositries
             if (search == null)
             {
                 query = @"
-            SELECT TOP (10) CODE, brnc_Code AS brnc_code, name
+            SELECT TOP (10) CODE, brnc_Code AS brnc_code, name, PHONE1
             FROM prtymast
             WHERE brnc_Code = @BranchCode
             ORDER BY code DESC;
@@ -39,7 +39,7 @@ namespace ProBankCoreMVC.Repositries
             else
             {
                 query = @"
-            SELECT CODE, brnc_Code AS brnc_code, name
+            SELECT CODE, brnc_Code AS brnc_code, name, PHONE1
             FROM prtymast
             WHERE brnc_Code = @BranchCode
               AND (

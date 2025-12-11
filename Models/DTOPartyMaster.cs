@@ -195,6 +195,7 @@ namespace Models
             public long CODE { get; set; }
             public long? brnc_code { get; set; }   // or brnc_Code if you prefer
             public string? name { get; set; }
+            public string? PHONE1 { get; set; }
         }
 
 
