@@ -47,6 +47,8 @@ builder.Services.AddScoped<IPrefixMaster, PrefixMasterRespository>();
 builder.Services.AddScoped<IAgentMaster, AgentMasterRepository>();
 builder.Services.AddScoped<IThreeFieldMaster, ThreeFieldMasterRepository>();    
 builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();    
+builder.Services.AddScoped<IDesignationMaster, DesignationRepository>();
+builder.Services.AddScoped<IDepositeAccountOpening, DepositeAccountOpeningRepository>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 );
@@ -117,16 +119,16 @@ app.UseCors("AngularOnly");
 app.UseAuthentication();
 
 // 🧱 LAYER 1 — IP ALLOW LIST
-app.UseMiddleware<IpAllowListMiddleware>();
+//app.UseMiddleware<IpAllowListMiddleware>();
 
 // 🧱 LAYER 2 — APP KEY VALIDATION
-app.UseMiddleware<AppKeyValidationMiddleware>();
+//app.UseMiddleware<AppKeyValidationMiddleware>();
 
 // 🧱 LAYER 3 — HMAC SIGNATURE VALIDATION
-app.UseMiddleware<HmacValidationMiddleware>();
+//app.UseMiddleware<HmacValidationMiddleware>();
 
 // 🧱 LAYER 4 — SINGLE SESSION PROTECTOR
-app.UseMiddleware<TokenValidationMiddleware>(userTokenStore);
+//app.UseMiddleware<TokenValidationMiddleware>(userTokenStore);
 
 app.UseAuthorization();
 

@@ -76,6 +76,7 @@ namespace Models
         public string? PHONE { get; set; }
         public string? PHONE1 { get; set; }
         public string? Mobile { get; set; }
+        public string? Mobile1 { get; set; }
 
         public long? zonecode { get; set; }
         public bool? Send_sms { get; set; }

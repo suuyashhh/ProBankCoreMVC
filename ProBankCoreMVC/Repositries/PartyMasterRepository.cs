@@ -30,7 +30,7 @@ namespace ProBankCoreMVC.Repositries
             if (search == null)
             {
                 query = @"
-            SELECT TOP (10) CODE, brnc_Code AS brnc_code, name, PHONE1
+            SELECT TOP (10) CODE, brnc_Code AS brnc_code, name, Mobile
             FROM prtymast
             WHERE brnc_Code = @BranchCode
             ORDER BY code DESC;
@@ -67,7 +67,7 @@ namespace ProBankCoreMVC.Repositries
             var query = @"
               SELECT P.CODE,AcType,P.name,name_Prefix AS nmprefix,pan_no,GST_No AS GSTNo,ADDR1,ADDR2,ADDR3,PIN,NationalityCode,NATIONALITY,Statecode,State,DistrictCode AS DistCode,District,Talukacode,Taluka,Citycode,City,
 Area_code,Area,Chk_SameAddress AS chkSameadd,CorADDR1,CorADDR2,CorADDR3,CorPincCode AS CorPIN,Cor_NationalityCode,Cor_NATIONALITY,Cor_Statecode,Cor_State,Cor_DistrictCode AS Cor_DistCode,Cor_District,Cor_Talukacode,
-Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,zonecode,Send_sms,AGE,birthdate,SEX,O.name As OCCU_Name, OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,S.name as Ref_STDIR_Name,Ref_STDIR,
+Cor_Taluka,Cor_Citycode,Cor_City,Cor_Area_code,Cor_Area,PHONE,PHONE1,Mobile,Mobile1,zonecode,Send_sms,AGE,birthdate,SEX,O.name As OCCU_Name, OCCU,Family_code,MEMBER_NR,MEMBER_NO,ST_DIR,S.name as Ref_STDIR_Name,Ref_STDIR,
 AdharNo,voteridno,passportno,passexpdate,passauth,otherid,Driving_License,Driving_License_ExpDate,rationno,FATHERNAME,officename,OFFICEADDR1,OFFICEADDR2,
 OFFICEADDR3,OFFICEPIN,OFFICEPHONE,OFFICEPHONE1,EMAIL_ID,Name_Bneficiary,AccountNo_Bneficiary,IFSCODE_Bneficiary,BankName_Bneficiary,BrName_Bneficiary,COMPREGNO,
 COMPREGDT,COMPBRANCH,COMPNATURE,COMPPAIDCAPT,COMPTURNOVER,COMPNETWORTH,propname1 AS Propritor1,propname2 AS Propritor2,C.name as Cast_Name,Cast,R.Name as Religon_Name,Religion AS Religon,KycAddrProof,KA.NAME As KycAddrProof_Name,KycAddrProof_Code,KycIdProof,KI.NAME As KycIdProof_Name,
@@ -223,6 +223,8 @@ KycIdProof_Code,opn_by
 
                 prm.Add("@PHONE", p.PHONE ?? string.Empty);
                 prm.Add("@PHONE1", p.PHONE1 ?? string.Empty);
+                prm.Add("@Mobile", p.Mobile ?? string.Empty);
+                prm.Add("@Mobile1", p.Mobile1 ?? string.Empty);
                 prm.Add("@zonecode", p.zonecode ?? 0);
                 prm.Add("@Send_sms", p.Send_sms ?? false);
 

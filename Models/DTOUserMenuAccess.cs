@@ -9,7 +9,7 @@ namespace Models
         public long UserGrad { get; set; }          // UserGrade.Code
         public int ProgrameId { get; set; } = 1;    // Programe_ID (default 1 like old page)
         public List<long> SelectedMenuIds { get; set; } = new();  // MenuIDs with Show_YN = 'Y'
-        public string user_img { get; set; }
+        public string? user_img { get; set; }
     }
     public class DTOUserMenuAccessMultiple
     {
