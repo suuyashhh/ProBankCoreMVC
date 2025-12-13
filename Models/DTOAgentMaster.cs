@@ -32,15 +32,15 @@ namespace Models
         public int Party_Code { get; set; }
         public int OTP { get; set; }
         public String NAME { get; set; }
-        public String MNAME { get; set; }
-        public String PASSWORD { get; set; }
+        public String? MNAME { get; set; }
+        public String? PASSWORD { get; set; }
         public String MobileNo { get; set; }
-        public String RadyToCash { get; set; }
-        public String lockflag { get; set; }
-        public String OLDCode { get; set; }
+        public String? RadyToCash { get; set; }
+        public String? lockflag { get; set; }
+        public String? OLDCode { get; set; }
         public String Active_YN { get; set; }
-        public String mob_no { get; set; }
-        public String auth { get; set; }
+        public String? mob_no { get; set; }
+        public String? auth { get; set; }
         public DateTime? Entry_Date { get; set; }
         public DateTime? Join_date { get; set; }
         public DateTime? Resign_Date { get; set; }

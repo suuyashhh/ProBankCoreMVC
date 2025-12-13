@@ -6,7 +6,7 @@ namespace ProBankCoreMVC.Interfaces
     {
         Task<IEnumerable<DTOAgentMaster>> GetAllAgent();
         Task<object> GetAgentById(int ID);
-        Task Save(DTOAgentMaster Agent);
+        Task<long> Save(DTOAgentMaster Agent);
         Task Update(DTOAgentMaster Agent);
         Task Delete(int ID);
 

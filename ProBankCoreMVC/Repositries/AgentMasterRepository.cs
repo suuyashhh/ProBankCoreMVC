@@ -79,72 +79,50 @@ namespace ProBankCoreMVC.Repositries
         }
 
 
-        public async Task Save(DTOAgentMaster Agent)
+        public async Task<long> Save(DTOAgentMaster Agent)
         {
-            const string query = @"INSERT INTO agntmast (brnc_code, code, Machine_type, Pyg_Amt_Digit, NoOfHolidays, Party_Code, OTP, NAME, PASSWORD, MobileNo, RadyToCash, OLDCode, Active_YN, mob_no, auth, Coll_Start_Date, Coll_End_Date, OTP_ValidTime, Resign_Date, Join_date, Entry_Date)
-                                    VALUES (@brnc_code, @code, @Machine_type, @Pyg_Amt_Digit, @NoOfHolidays, @Party_Code, @OTP, @NAME, @PASSWORD, @MobileNo, @RadyToCash, @OLDCode, @Active_YN, @mob_no, @auth, @Coll_Start_Date, @Coll_End_Date, @OTP_ValidTime, @Resign_Date, @Join_date, @Entry_Date)";
+            const string query = @"
+        INSERT INTO agntmast
+        (brnc_code, code, Machine_type, Party_Code, NAME, MobileNo, Active_YN, Resign_Date, Join_date)
+        VALUES
+        (@brnc_code, @code, @Machine_type, @Party_Code, @NAME, @MobileNo, @Active_YN, @Resign_Date, @Join_date)";
 
-            long newID = await GenerateAgentCode(Agent.ID);
+            long newID = await GenerateAgentCode(Agent.brnc_code);
 
             using (var conn = _dapperContext.CreateConnection())
             {
                 await conn.ExecuteAsync(query, new
                 {
-                    ID = newID,
-                    Entry_Date = DateTime.Now,
                     brnc_code = Agent.brnc_code,
-                    code = Agent.code,
+                    code = newID,
                     Machine_type = Agent.Machine_type,
-                    Pyg_Amt_Digit = Agent.Pyg_Amt_Digit,
-                    NoOfHolidays = Agent.NoOfHolidays,
                     Party_Code = Agent.Party_Code,
-                    OTP = Agent.OTP,
                     NAME = Agent.NAME,
-                    PASSWORD = Agent.PASSWORD,
                     MobileNo = Agent.MobileNo,
-                    RadyToCash = Agent.RadyToCash,
-                    OLDCode = Agent.OLDCode,
                     Active_YN = Agent.Active_YN,
-                    mob_no = Agent.mob_no,
-                    auth = Agent.auth,
-                    Coll_Start_Date = Agent.Coll_Start_Date,
-                    Coll_End_Date = Agent.Coll_End_Date,
-                    OTP_ValidTime = Agent.OTP_ValidTime,
                     Resign_Date = Agent.Resign_Date,
                     Join_date = Agent.Join_date
-
                 });
             }
+
+            
+            return newID;
         }
+
 
 
         public async Task Update(DTOAgentMaster Agent)
         {
             const string query = @"
-        UPDATE agntmast
-        SET
-            brnc_code      = @brnc_code,
-            code           = @code,
-            Machine_type   = @Machine_type,
-            Pyg_Amt_Digit  = @Pyg_Amt_Digit,
-            NoOfHolidays   = @NoOfHolidays,
-            Party_Code     = @Party_Code,
-            OTP            = @OTP,
-            NAME           = @NAME,
-            PASSWORD       = @PASSWORD,
-            MobileNo       = @MobileNo,
-            RadyToCash     = @RadyToCash,
-            OLDCode        = @OLDCode,
-            Active_YN      = @Active_YN,
-            mob_no         = @mob_no,
-            auth           = @auth,
-            Coll_Start_Date = @Coll_Start_Date,
-            Coll_End_Date   = @Coll_End_Date,
-            OTP_ValidTime   = @OTP_ValidTime,
-            Resign_Date     = @Resign_Date,
-            Join_date       = @Join_date,
-            Entry_Date      = @Entry_Date
-        WHERE ID = @ID ";
+            UPDATE agntmast
+            SET
+                Machine_type   = @Machine_type,
+                MobileNo       = @MobileNo,
+                Active_YN      = @Active_YN,
+                Resign_Date    = @Resign_Date,
+                Join_date      = @Join_date
+            WHERE ID = @ID";
+
 
             try
             {
@@ -166,7 +144,6 @@ namespace ProBankCoreMVC.Repositries
                         RadyToCash = Agent.RadyToCash,
                         OLDCode = Agent.OLDCode,
                         Active_YN = Agent.Active_YN,
-                        mob_no = Agent.mob_no,
                         auth = Agent.auth,
                         Coll_Start_Date = Agent.Coll_Start_Date,
                         Coll_End_Date = Agent.Coll_End_Date,
@@ -198,13 +175,13 @@ namespace ProBankCoreMVC.Repositries
 
 
 
-        private async Task<long> GenerateAgentCode(int ID)
+        private async Task<long> GenerateAgentCode(int brnc_code)
         {
-            const string query = "SELECT MAX(ID) AS ID FROM agntmast;";
+            const string query = @"select top 1 code from agntmast where brnc_code = @Branch_Code order by code Desc";
 
             using (var conn = _dapperContext.CreateConnection())
             {
-                var lastId = await conn.ExecuteScalarAsync<long?>(query, new { ID = ID });
+                var lastId = await conn.ExecuteScalarAsync<long?>(query, new { Branch_Code = brnc_code });
                 return (lastId ?? 0) + 1;
             }
         }
