@@ -47,6 +47,8 @@ builder.Services.AddScoped<IPrefixMaster, PrefixMasterRespository>();
 builder.Services.AddScoped<IAgentMaster, AgentMasterRepository>();
 builder.Services.AddScoped<IThreeFieldMaster, ThreeFieldMasterRepository>();    
 builder.Services.AddScoped<ICommanMaster, CommanMasterRepository>();    
+builder.Services.AddScoped<IDesignationMaster, DesignationRepository>();
+builder.Services.AddScoped<IDepositeAccountOpening, DepositeAccountOpeningRepository>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
 );
