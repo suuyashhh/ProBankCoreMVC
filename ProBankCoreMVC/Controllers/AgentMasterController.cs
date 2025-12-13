@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
+using Pipelines.Sockets.Unofficial.Arenas;
 using ProBankCoreMVC.Interfaces;
 
 namespace ProBankCoreMVC.Controllers
@@ -47,7 +48,6 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
-
         [HttpPost("Save")]
         public async Task<IActionResult> Save([FromBody] DTOAgentMaster Agent)
         {
@@ -56,8 +56,14 @@ namespace ProBankCoreMVC.Controllers
 
             try
             {
-                await _agentMaster.Save(Agent);
-                return Ok(new { message = "Agent saved successfully." });
+                // 🔑 CALL SAVE ONLY ONCE
+                var newAgentCode = await _agentMaster.Save(Agent);
+
+                return Ok(new
+                {
+                    message = "Agent saved successfully.",
+                    agentCode = newAgentCode
+                });
             }
             catch (Exception ex)
             {
@@ -65,7 +71,8 @@ namespace ProBankCoreMVC.Controllers
             }
         }
 
-        [HttpPut("Update")]
+
+        [HttpPost("Update")]
         public async Task<IActionResult> Update([FromBody] DTOAgentMaster Agent)
         {
             if (Agent == null || Agent.ID <= 0)
